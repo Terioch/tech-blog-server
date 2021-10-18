@@ -10,7 +10,8 @@ namespace TechBlog.Services
     {
         public List<PostModel> GetAllPosts();
         public List<PostModel> GetPostById(int Id);
-        public PostModel Create(PostModel post);
+        public int Insert(PostModel post);
+        public int Update(PostModel post);
         public int Delete(int Id);
     }
 }

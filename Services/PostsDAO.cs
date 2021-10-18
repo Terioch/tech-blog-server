@@ -30,7 +30,10 @@ namespace TechBlog.Services
                         Id = (int)reader[0],
                         Title = (string)reader[1],
                         Date = (DateTime)reader[2],
-                        Excerpt = (string)reader[3],
+                        Author = (string)reader[3],
+                        ImgSrc = (string)(reader[4]),
+                        Excerpt = (string)reader[5],
+                        Content = (string)reader[6],
                     });
                 }
             } catch(Exception exc)
@@ -45,7 +48,31 @@ namespace TechBlog.Services
             throw new Exception();
         }
 
-        public PostModel Create(PostModel post)
+        public int Insert(PostModel post)
+        {
+            string statement = "INSERT INTO dbo.Posts (title, date, author, imgSrc, excerpt, content) VALUES (@Title, @Date, @Author, @ImgSrc, @Excerpt, @Content)";
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+
+            command.Parameters.AddWithValue("@Title", post.Title);
+            command.Parameters.AddWithValue("@Date", post.Date);
+            command.Parameters.AddWithValue("@Author", post.Author);
+            command.Parameters.AddWithValue("@ImgSrc", post.ImgSrc);
+            command.Parameters.AddWithValue("@Excerpt", post.Excerpt);
+            command.Parameters.AddWithValue("@Content", post.Content);   
+
+            try
+            {
+                connection.Open();
+                post.Id = Convert.ToInt32(command.ExecuteScalar());
+            } catch (Exception exc)
+            {
+                throw new Exception(exc.Message);
+            }
+            return post.Id;
+        }
+
+        public int Update(PostModel post)
         {
             throw new Exception();
         }
