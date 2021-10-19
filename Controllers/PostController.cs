@@ -31,7 +31,7 @@ namespace TechBlog.Controllers
         public ActionResult<PostModel> Create([FromBody] PostModel post)
         {
             int postId = repository.Insert(post);
-            // TODO: Retrieve post with correct database Id. Current post is copied and loses reference once passed into the Insert method
+            // TODO: Retrieve post with correct database Id. Current post is copied and loses reference once passed into Insert method
             post.Id = postId;
             return post;
         }

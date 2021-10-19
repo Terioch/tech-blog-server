@@ -29,7 +29,7 @@ namespace TechBlog.Services
                     {
                         Id = (int)reader[0],
                         Title = (string)reader[1],
-                        Date = (DateTime)reader[2],
+                        Date = (long)reader[2],
                         Author = (string)reader[3],
                         ImgSrc = (string)(reader[4]),
                         Excerpt = (string)reader[5],
