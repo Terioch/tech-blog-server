@@ -27,7 +27,7 @@ namespace TechBlog.Controllers
             return posts;
         }
 
-        [HttpGet(":id")]
+        [HttpGet("{id}")]
         public ActionResult<PostModel> GetOne(int id)
         {
             List<PostModel> posts = repository.GetPostById(id);
