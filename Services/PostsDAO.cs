@@ -45,7 +45,37 @@ namespace TechBlog.Services
 
         public List<PostModel> GetPostById(int Id)
         {
-            throw new Exception();
+            string statement = "SELECT * FROM dbo.Posts WHERE id = @Id";
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            List<PostModel> posts = new();
+
+            command.Parameters.AddWithValue("@Id", Id);
+
+            try
+            {
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    posts.Add(new PostModel
+                    {
+                        Id = (int)reader[0],
+                        Title = (string)reader[1],
+                        Date = (long)reader[2],
+                        Author = (string)reader[3],
+                        ImgSrc = (string)(reader[4]),
+                        Excerpt = (string)reader[5],
+                        Content = (string)reader[6],
+                    });
+                }
+            }
+            catch (Exception exc)
+            {
+                throw new Exception(exc.Message);
+            }
+            return posts;
         }
 
         public int Insert(PostModel post)

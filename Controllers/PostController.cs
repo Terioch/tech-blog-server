@@ -20,14 +20,21 @@ namespace TechBlog.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<PostModel>> Index()
+        public ActionResult<IEnumerable<PostModel>> Get()
         {
             // TODO: Convert post title to slug via post DTO
             List<PostModel> posts = repository.GetAllPosts();
             return posts;
         }
 
-        [HttpPost]
+        [HttpGet(":id")]
+        public ActionResult<PostModel> GetOne(int id)
+        {
+            List<PostModel> posts = repository.GetPostById(id);
+            return posts[0];            
+        }
+
+        [HttpPost("create")]
         public ActionResult<PostModel> Create([FromBody] PostModel post)
         {
             int postId = repository.Insert(post);
