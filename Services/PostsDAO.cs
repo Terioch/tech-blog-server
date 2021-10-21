@@ -80,9 +80,10 @@ namespace TechBlog.Services
 
         public int Insert(PostModel post)
         {
-            string statement = "INSERT INTO dbo.Posts (title, date, author, imgSrc, excerpt, content) VALUES (@Title, @Date, @Author, @ImgSrc, @Excerpt, @Content)";
+            string statement = "INSERT INTO dbo.Posts (title, date, author, imgSrc, excerpt, content) OUTPUT Inserted.Id VALUES (@Title, @Date, @Author, @ImgSrc, @Excerpt, @Content)";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
+            int id = -1;
 
             command.Parameters.AddWithValue("@Title", post.Title);
             command.Parameters.AddWithValue("@Date", post.Date);
@@ -94,17 +95,39 @@ namespace TechBlog.Services
             try
             {
                 connection.Open();
-                post.Id = Convert.ToInt32(command.ExecuteScalar());
+                id = Convert.ToInt32(command.ExecuteScalar());
             } catch (Exception exc)
             {
                 throw new Exception(exc.Message);
             }
-            return post.Id;
+            return id;
         }
 
         public int Update(PostModel post)
         {
-            throw new Exception();
+            string statement = "UPDATE dbo.Posts SET title = @Title, date = @Date, author = @Author, imgSrc = @ImgSrc, excerpt = @Excerpt, content = @Content OUTPUT Inserted.Id WHERE id = @Id";
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            int id = -1;
+
+            command.Parameters.AddWithValue("@Id", post.Id);
+            command.Parameters.AddWithValue("@Title", post.Title);
+            command.Parameters.AddWithValue("@Date", post.Date);
+            command.Parameters.AddWithValue("@Author", post.Author);
+            command.Parameters.AddWithValue("@ImgSrc", post.ImgSrc);
+            command.Parameters.AddWithValue("@Excerpt", post.Excerpt);
+            command.Parameters.AddWithValue("@Content", post.Content);
+
+            try
+            {
+                connection.Open();
+                id = Convert.ToInt32(command.ExecuteScalar());
+            }
+            catch (Exception exc)
+            {
+                throw new Exception(exc.Message);
+            }
+            return id;
         }
 
         public int Delete(int Id)
