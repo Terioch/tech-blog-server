@@ -10,6 +10,12 @@ namespace TechBlog.Services
     public class UsersDAO
     {
         readonly string connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=TechBlog;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        readonly SecurityService security;
+
+        public UsersDAO()
+        {
+            security = new SecurityService();
+        }
 
         public bool IsUsernameFound(UserModel user)
         {
@@ -26,6 +32,7 @@ namespace TechBlog.Services
         public UserModel GetUserByFullCredentials(UserModel user)
         {
             string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email AND password = @password";
+            user.Password = security.HashPassword(user.Password);
             UserModel fetchedUser = FetchQuery(user, statement);
             return fetchedUser;
         }
@@ -33,6 +40,7 @@ namespace TechBlog.Services
         public int InsertUser(UserModel user)
         {
             string statement = "INSERT INTO dbo.Users (username, email, password) OUTPUT Inserted.Id VALUES (@username, @email, @password)";
+            // user.Password = security.HashPassword(user.Password);
             int id = InsertQuery(user, statement);
             return id;
         }
@@ -40,13 +48,12 @@ namespace TechBlog.Services
         public int InsertQuery(UserModel user, string statement)
         {
             using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
-            string hashedPassword = user.Password; // TODO: Hash password
+            SqlCommand command = new(statement, connection);            
             int id = -1;
 
             command.Parameters.AddWithValue("@username", user.Username);
             command.Parameters.AddWithValue("@email", user.Email);
-            command.Parameters.AddWithValue("@password", hashedPassword);
+            command.Parameters.AddWithValue("@password", user.Password);
 
             try
             {
