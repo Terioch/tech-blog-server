@@ -20,12 +20,13 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost]
-        public bool ProcessRegistration(UserModel user)
+        public ActionResult<UserModel> ProcessRegistration(UserModel user)
         {
-           if (true)
+           if (repository.IsUsernameFound(user))
            {
-                return false;
+                return user;
            }
+            return user;
         }
     }
 }

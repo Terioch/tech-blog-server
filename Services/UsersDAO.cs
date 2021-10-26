@@ -13,28 +13,51 @@ namespace TechBlog.Services
 
         public bool IsUsernameFound(UserModel user)
         {
-            string statement = "SELECT * FROM dbo.Users WHERE username = @username";
+            string statement = "SELECT username FROM dbo.Users WHERE username = @username";
             return SuccessQuery(user, statement);            
         }
 
         public bool IsEmailFound(UserModel user)
         {
-            string statement = "SELECT * FROM dbo.Users WHERE email = @email";
+            string statement = "SELECT email FROM dbo.Users WHERE email = @email";
             return SuccessQuery(user, statement);
-        }
-
-        public bool InsertUser(UserModel user)
-        {
-            string statement = "INSERT INTO dbo.Users (username, email, password) VALUES (@username, @email, @password)";
-            SuccessQuery(user, statement);
-            return IsEmailFound(user);
-        }
+        }        
 
         public UserModel GetUserByUsernameAndEmail(UserModel user)
         {
             string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email";
             UserModel fetchedUser = FetchQuery(user, statement);
             return fetchedUser;
+        }
+
+        public int InsertUser(UserModel user)
+        {
+            string statement = "INSERT INTO dbo.Users (username, email, password) OUTPUT Inserted.Id VALUES (@username, @email, @password)";
+            int id = InsertQuery(user, statement);
+            return id;
+        }
+
+        public int InsertQuery(UserModel user, string statement)
+        {
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            string hashedPassword = user.Password; // TODO: Hash password
+            int id = -1;
+
+            command.Parameters.AddWithValue("@username", user.Username);
+            command.Parameters.AddWithValue("@email", user.Email);
+            command.Parameters.AddWithValue("@password", hashedPassword);
+
+            try
+            {
+                connection.Open();
+                id = (int)command.ExecuteScalar();               
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
+            return id;
         }
 
         public bool SuccessQuery(UserModel user, string statement)
