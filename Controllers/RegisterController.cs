@@ -20,13 +20,21 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost]
-        public ActionResult<UserModel> ProcessRegistration(UserModel user)
+        public ActionResult<int> ProcessRegistration(UserModel user)
         {
-           if (repository.IsUsernameFound(user))
-           {
-                return user;
-           }
-            return user;
+            if (repository.IsUsernameFound(user))
+            {
+                // Return username present error message
+
+            }
+
+            if (repository.IsEmailFound(user))
+            {
+                // Return email present error message
+            }
+
+            int userId = repository.InsertUser(user);
+            return userId;
         }
     }
 }

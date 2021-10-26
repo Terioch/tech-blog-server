@@ -1,4 +1,5 @@
 ﻿using TechBlog.Models;
+using TechBlog.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -8,13 +9,26 @@ using System.Threading.Tasks;
 namespace TechBlog.Controllers
 {
     [ApiController]
-    [Route("/api/register")]
+    [Route("/api/login")]
     public class LoginController: ControllerBase
     {
-        [HttpPost]
-        public bool ProcessLogin(UserModel user)
+        private readonly UsersDAO repository;
+        
+        public LoginController()
         {
-            return false;
+            repository = new UsersDAO();
+        }
+
+        [HttpPost]
+        public ActionResult<UserModel> ProcessLogin(UserModel user)
+        {
+            UserModel fetchedUser = repository.GetUserByFullCredentials(user);
+
+            if (fetchedUser == null)
+            {
+                // Return login error message
+            }
+            return fetchedUser;
         }
     }
 }

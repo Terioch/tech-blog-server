@@ -23,9 +23,9 @@ namespace TechBlog.Services
             return SuccessQuery(user, statement);
         }        
 
-        public UserModel GetUserByUsernameAndEmail(UserModel user)
+        public UserModel GetUserByFullCredentials(UserModel user)
         {
-            string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email";
+            string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email AND password = @password";
             UserModel fetchedUser = FetchQuery(user, statement);
             return fetchedUser;
         }
