@@ -32,20 +32,44 @@ namespace TechBlog.Services
         public UserModel GetUserByFullCredentials(UserModel user)
         {
             string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email AND password = @password";
-            user.Password = security.HashPassword(user.Password);
+            byte[] salt = FetchSalt(user);
+            user.Password = security.HashPassword(user.Password, salt);
             UserModel fetchedUser = FetchQuery(user, statement);
             return fetchedUser;
         }
 
+        public byte[] FetchSalt(UserModel user)
+        {
+            string statement = "SELECT salt FROM dbo.Users WHERE username = @username";
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            byte[] salt = null;
+
+            command.Parameters.AddWithValue("@username", user.Username);
+
+            try
+            {
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                salt = (byte[])reader[0];
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
+            return salt;
+        }
+
         public int InsertUser(UserModel user)
         {
-            string statement = "INSERT INTO dbo.Users (username, email, password) OUTPUT Inserted.Id VALUES (@username, @email, @password)";
-            // user.Password = security.HashPassword(user.Password);
-            int id = InsertQuery(user, statement);
+            string statement = "INSERT INTO dbo.Users (username, email, password) OUTPUT Inserted.Id VALUES (@username, @email, @password, @salt)";
+            byte[] salt = security.GenerateSalt();
+            user.Password = security.HashPassword(user.Password, salt);
+            int id = InsertQuery(user, statement, salt);
             return id;
         }
 
-        public int InsertQuery(UserModel user, string statement)
+        public int InsertQuery(UserModel user, string statement, byte[] salt)
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);            
@@ -54,6 +78,7 @@ namespace TechBlog.Services
             command.Parameters.AddWithValue("@username", user.Username);
             command.Parameters.AddWithValue("@email", user.Email);
             command.Parameters.AddWithValue("@password", user.Password);
+            command.Parameters.AddWithValue("@salt", salt);
 
             try
             {
@@ -100,7 +125,8 @@ namespace TechBlog.Services
             UserModel fetchedUser = null;
 
             command.Parameters.AddWithValue("@username", user.Username);
-            command.Parameters.AddWithValue("@email", user.Email);  
+            command.Parameters.AddWithValue("@email", user.Email);
+            command.Parameters.AddWithValue("@password", user.Password);
 
             try
             {

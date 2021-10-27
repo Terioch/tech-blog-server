@@ -11,7 +11,7 @@ namespace TechBlog.Models
     {
         public int Id { get; set; }
 
-        [StringLength(30, MinimumLength = 3)]
+        [StringLength(20, MinimumLength = 3)]
         public string Username { get; set; }
 
         [DataType(DataType.EmailAddress)]

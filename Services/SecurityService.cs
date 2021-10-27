@@ -9,10 +9,8 @@ namespace TechBlog.Services
 {
     public class SecurityService
     {
-        public string HashPassword(string password)
-        {
-            // generate a 128-bit salt using a cryptographically strong random sequence of nonzero values
-            byte[] salt = new byte[128 / 8];
+        public string HashPassword(string password, byte[] salt)
+        { 
 
             using (var rngCsp = new RNGCryptoServiceProvider())
             {
@@ -28,6 +26,12 @@ namespace TechBlog.Services
                 numBytesRequested: 256 / 8
             ));
             return hashedPassword;
+        }
+
+        // Generate a 128-bit salt using a cryptographically strong random sequence of nonzero values
+        public byte[] GenerateSalt()
+        {
+            return new byte[128 / 8];
         }
     }
 }
