@@ -13,7 +13,7 @@ namespace TechBlog.Services
         public string HashPassword(string password, string salt)
         {
             HashAlgorithm algorithm = new SHA256CryptoServiceProvider();
-            byte[] bytesToBeHashed = Encoding.UTF8.GetBytes(password + salt);
+            byte[] bytesToBeHashed = Encoding.UTF8.GetBytes(salt + password);
             byte[] hashedPasswordBytes = algorithm.ComputeHash(bytesToBeHashed);
             string hashedPassword = Convert.ToBase64String(hashedPasswordBytes);
             return hashedPassword;

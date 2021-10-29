@@ -33,7 +33,7 @@ namespace TechBlog.Services
         public UserModel GetUserByFullCredentials(UserModel user)
         {
             string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email AND password = @password";
-            byte[] salt = FetchSaltQuery(user);
+            string salt = FetchSaltQuery(user);
 
             if (salt == null) return null;
             Console.WriteLine(salt.ToString());
@@ -45,14 +45,14 @@ namespace TechBlog.Services
         public int InsertUser(UserModel user)
         {
             string statement = "INSERT INTO dbo.Users (username, email, password, salt) OUTPUT Inserted.Id VALUES (@username, @email, @password, @salt)";
-            byte[] salt = security.GenerateSalt();
+            string salt = security.GenerateSalt();
 
             user.Password = security.HashPassword(user.Password, salt);
             int id = InsertQuery(user, statement, salt);
             return id;
         }
 
-        public int InsertQuery(UserModel user, string statement, byte[] salt)
+        public int InsertQuery(UserModel user, string statement, string salt)
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);            
@@ -117,7 +117,7 @@ namespace TechBlog.Services
                 connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
 
-                if (reader.HasRows)
+                if (reader.Read())
                 {
                     fetchedUser = new UserModel
                     {
@@ -135,12 +135,12 @@ namespace TechBlog.Services
             return fetchedUser;
         }
 
-        public byte[] FetchSaltQuery(UserModel user)
+        public string FetchSaltQuery(UserModel user)
         {
             string statement = "SELECT salt FROM dbo.Users WHERE username = @username";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            byte[] salt = null;
+            string salt = null;
 
             command.Parameters.AddWithValue("@username", user.Username);
 
@@ -150,9 +150,8 @@ namespace TechBlog.Services
                 SqlDataReader reader = command.ExecuteReader();
 
                 if (reader.Read())
-                {
-                    Console.WriteLine(Encoding.UTF8.GetString((byte[])reader[0]));
-                    salt = (byte[])reader[0];
+                {        
+                    salt = (string)reader[0];
                 }
             }
             catch (Exception exc)
