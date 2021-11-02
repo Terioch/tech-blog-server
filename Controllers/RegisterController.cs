@@ -20,21 +20,28 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost]
-        public ActionResult<int> ProcessRegistration(UserModel user)
+        public ActionResult<int> ProcessRegistration(UserModel user)            
         {
-            if (repository.IsUsernameFound(user))
+            try
+            { 
+                if (repository.IsUsernameFound(user))
+                {
+                    // Return username present error message
+                    throw new Exception("This username is taken. Please choose a different name.");
+                }
+
+                if (repository.IsEmailFound(user))
+                {
+                    // Return email present error message                
+                    throw new Exception("This email address is already associated with an account. Either use a different email or login if you are the account holder.");
+                }
+
+                int userId = repository.InsertUser(user);
+                return userId;
+            } catch(Exception exc)
             {
-                // Return username present error message
-
-            }
-
-            if (repository.IsEmailFound(user))
-            {
-                // Return email present error message
-            }
-
-            int userId = repository.InsertUser(user);
-            return userId;
+                return BadRequest(exc.Message);
+            }            
         }
     }
 }

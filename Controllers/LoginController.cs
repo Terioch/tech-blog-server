@@ -20,15 +20,22 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost]
-        public ActionResult<UserModel> ProcessLogin(UserModel user)
+        public ActionResult<int> ProcessLogin(UserModel user)
         {
-            UserModel fetchedUser = repository.GetUserByFullCredentials(user);
-
-            if (fetchedUser == null)
+            try
             {
-                // Return login error message
-            }
-            return fetchedUser;
+                UserModel fetchedUser = repository.GetUserByFullCredentials(user);
+
+                if (fetchedUser == null)
+                {
+                    // Return login error message
+                    throw new Exception("These account details are not valid. Please try again.");
+                }
+                return fetchedUser.Id;
+            } catch(Exception exc)
+            {
+                return BadRequest(exc.Message);
+            }           
         }
     }
 }
