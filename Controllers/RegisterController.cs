@@ -12,11 +12,13 @@ namespace TechBlog.Controllers
     [Route("/api/register")]
     public class RegisterController: ControllerBase
     {
-        readonly UsersDAO repository;    
+        readonly UsersDAO repository;
+        readonly SecurityService security;
 
         public RegisterController()
         {
             repository = new UsersDAO();
+            security = new SecurityService();
         }
 
         [HttpPost]
@@ -37,11 +39,12 @@ namespace TechBlog.Controllers
                 }
 
                 int userId = repository.InsertUser(user);
-                return userId;
+                string token = security.GenerateToken(user);
+                return Ok(new { Id = userId, Token = token });
             } catch(Exception exc)
             {
                 Console.WriteLine(exc);
-                return BadRequest(exc.Message);
+                return Unauthorized(exc.Message);
             }            
         }
     }

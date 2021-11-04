@@ -13,10 +13,12 @@ namespace TechBlog.Controllers
     public class LoginController: ControllerBase
     {
         private readonly UsersDAO repository;
-        
+        readonly SecurityService security;
+
         public LoginController()
         {
             repository = new UsersDAO();
+            security = new SecurityService();
         }
 
         [HttpPost]
@@ -31,10 +33,11 @@ namespace TechBlog.Controllers
                     // Return login error message
                     throw new Exception("These account details are not valid. Please try again.");
                 }
-                return fetchedUser.Id;
+                string token = security.GenerateToken(user);
+                return Ok(new { fetchedUser.Id, Token = token });
             } catch(Exception exc)
             {
-                return BadRequest(exc.Message);
+                return Unauthorized(exc.Message);
             }           
         }
     }

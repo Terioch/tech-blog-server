@@ -13,7 +13,7 @@ namespace TechBlog.Services
 
         public List<PostModel> GetAllPosts()
         {
-            string statement = "SELECT * FROM dbo.Posts WHERE id < 60";
+            string statement = "SELECT * FROM dbo.Posts";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
             List<PostModel> posts = new();

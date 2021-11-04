@@ -11,5 +11,6 @@ namespace TechBlog.Models
         public string Value { get; set; }
         public int PostId { get; set; }
         public string SenderUsername { get; set; }
+        public long Date { get; set; }
     }
 }

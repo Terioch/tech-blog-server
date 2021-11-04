@@ -22,7 +22,7 @@ namespace TechBlog.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<PostModel>> Get()
+        public ActionResult<IEnumerable<PostModel>> GetAllPosts()
         {
             List<PostModel> posts = repository.GetAllPosts();
             return posts;

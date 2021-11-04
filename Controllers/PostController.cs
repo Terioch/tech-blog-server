@@ -23,13 +23,13 @@ namespace TechBlog.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<PostModel>> Get()
         {
-            List<PostModel> posts = repository.GetAllPosts();
+            List<PostModel> posts = repository.GetAllPosts();            
             return posts;
         }
 
-        [HttpGet("AuthGet")]
+        [HttpGet("adminGet")]
         [Authorize]
-        public ActionResult<IEnumerable<PostModel>> AuthGet()
+        public ActionResult<IEnumerable<PostModel>> AdminGet()
         {
             List<PostModel> posts = repository.GetAllPosts();
             return posts;
@@ -42,16 +42,24 @@ namespace TechBlog.Controllers
             return posts[0];            
         }
 
+        [HttpGet("adminGetOne/{id}")]
         [Authorize]
+        public ActionResult<PostModel> AdminGetOne(int id)
+        {
+            List<PostModel> posts = repository.GetPostById(id);
+            return posts[0];
+        }
+      
         [HttpPost("create")]
+        [Authorize]
         public ActionResult<int> Create([FromBody] PostModel post)
         {
             int postId = repository.Insert(post);            
             return postId;
         }
 
-        [Authorize]
         [HttpPut("update")]
+        [Authorize]
         public ActionResult<int> Update([FromBody] PostModel post)
         {
             int postId = repository.Update(post);
