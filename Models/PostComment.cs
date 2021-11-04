@@ -10,6 +10,6 @@ namespace TechBlog.Models
         public int Id { get; set; }
         public string Value { get; set; }
         public int PostId { get; set; }
-        public string senderUsername { get; set; }
+        public string SenderUsername { get; set; }
     }
 }

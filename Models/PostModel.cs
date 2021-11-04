@@ -12,6 +12,6 @@ namespace TechBlog.Models
         public string ImgSrc { get; set; }
         public string Excerpt { get; set; }
         public string Content { get; set; }
-        public PostComment[] Comment { get; set; }
+        // public PostComment[] Comments { get; set; }
     }
 }
