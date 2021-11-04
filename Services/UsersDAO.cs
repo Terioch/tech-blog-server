@@ -35,8 +35,7 @@ namespace TechBlog.Services
             string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email AND password = @password";
             string salt = FetchSaltQuery(user);
 
-            if (salt == null) return null;
-            Console.WriteLine(salt.ToString());
+            if (salt == null) return null;            
             user.Password = security.HashPassword(user.Password, salt);
             UserModel fetchedUser = FetchQuery(user, statement);
             return fetchedUser;

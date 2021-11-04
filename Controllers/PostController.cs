@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TechBlog.Controllers
 {
@@ -22,7 +23,14 @@ namespace TechBlog.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<PostModel>> Get()
         {
-            // TODO: Convert post title to slug via post DTO
+            List<PostModel> posts = repository.GetAllPosts();
+            return posts;
+        }
+
+        [HttpGet("AuthGet")]
+        [Authorize]
+        public ActionResult<IEnumerable<PostModel>> AuthGet()
+        {
             List<PostModel> posts = repository.GetAllPosts();
             return posts;
         }
@@ -34,6 +42,7 @@ namespace TechBlog.Controllers
             return posts[0];            
         }
 
+        [Authorize]
         [HttpPost("create")]
         public ActionResult<int> Create([FromBody] PostModel post)
         {
@@ -41,6 +50,7 @@ namespace TechBlog.Controllers
             return postId;
         }
 
+        [Authorize]
         [HttpPut("update")]
         public ActionResult<int> Update([FromBody] PostModel post)
         {

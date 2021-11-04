@@ -40,6 +40,7 @@ namespace TechBlog.Controllers
                 return userId;
             } catch(Exception exc)
             {
+                Console.WriteLine(exc);
                 return BadRequest(exc.Message);
             }            
         }
