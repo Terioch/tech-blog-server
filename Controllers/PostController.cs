@@ -12,11 +12,11 @@ namespace TechBlog.Controllers
     [ApiController]
     [Route("/api/posts")]
     public class PostController : ControllerBase
-    {
+    {      
         readonly PostsDAO repository;
 
         public PostController()
-        {
+        {          
             repository = new PostsDAO();
         }
 

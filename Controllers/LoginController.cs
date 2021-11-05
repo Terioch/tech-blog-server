@@ -11,18 +11,18 @@ namespace TechBlog.Controllers
     [ApiController]
     [Route("/api/login")]
     public class LoginController: ControllerBase
-    {
+    {       
         private readonly UsersDAO repository;
         readonly SecurityService security;
 
         public LoginController()
-        {
+        {           
             repository = new UsersDAO();
             security = new SecurityService();
         }
 
         [HttpPost]
-        public ActionResult<int> ProcessLogin(UserModel user)
+        public ActionResult<int> ProcessLogin([FromBody] UserModel user)
         {
             try
             {

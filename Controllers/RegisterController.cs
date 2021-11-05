@@ -22,7 +22,7 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost]
-        public ActionResult<int> ProcessRegistration(UserModel user)            
+        public ActionResult<int> ProcessRegistration([FromBody] UserModel user)            
         {
             try
             { 
