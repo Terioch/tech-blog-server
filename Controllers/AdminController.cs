@@ -11,21 +11,13 @@ namespace TechBlog.Controllers
 {
     [ApiController]
     [Route("/api/admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
-    {
-        readonly PostsDAO repository;
-
-        public AdminController()
+    {        
+        [HttpPost]
+        public ActionResult<string> IsAdmin()
         {
-            repository = new PostsDAO();
-        }
-
-        [HttpGet]
-        public ActionResult<IEnumerable<PostModel>> GetAllPosts()
-        {
-            List<PostModel> posts = repository.GetAllPosts();
-            return posts;
+            return "User is an admin";
         }
     }
 }

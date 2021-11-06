@@ -11,13 +11,14 @@ namespace TechBlog.Models
     {
         public int Id { get; set; }
 
-        // [StringLength(20, MinimumLength = 3)]
+        [StringLength(20, MinimumLength = 3)]
         public string Username { get; set; }
 
-        // [DataType(DataType.EmailAddress)]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
-        // [DataType(DataType.Password)]
+        [DataType(DataType.Password)]
+        // [StringLength(40, MinimumLength = 8)]
         public string Password { get; set; }
     }
 }
