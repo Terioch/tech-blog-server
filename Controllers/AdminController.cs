@@ -14,10 +14,10 @@ namespace TechBlog.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {        
-        [HttpPost]
+        [HttpGet]
         public ActionResult<string> IsAdmin()
         {
-            return "User is an admin";
+            return "Administrator access granted";
         }
     }
 }

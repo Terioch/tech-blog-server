@@ -30,7 +30,7 @@ namespace TechBlog.Controllers
         {
             repository = new UsersDAO();
             security = new SecurityService();
-        }
+        }        
 
         [HttpPost("register")]
         public ActionResult<int> ProcessRegistration([FromBody] UserModel user)
@@ -54,6 +54,7 @@ namespace TechBlog.Controllers
                 List<Claim> claims = security.AddClaims(user, roleName);
                 SecurityToken token = security.GenerateToken(claims);
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
                 return Ok(new 
                 { 
                     Id = id, 
@@ -80,8 +81,18 @@ namespace TechBlog.Controllers
                     // Return login error message
                     throw new Exception("These account details are not valid. Please try again.");
                 }
-                string token = security.GenerateToken(user);
-                return Ok(new { fetchedUser.Id, Token = token });
+
+                string roleName = repository.GetRoleByUser(fetchedUser.Id);
+                List<Claim> claims = security.AddClaims(user, roleName);
+                SecurityToken token = security.GenerateToken(claims);
+                string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                return Ok(new
+                {
+                    Id = fetchedUser.Id,
+                    Token = tokenString,
+                    Expires = token.ValidTo
+                });
             }
             catch (Exception exc)
             {
