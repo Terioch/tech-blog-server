@@ -34,23 +34,26 @@ namespace TechBlog.Services
             return salt;
         }
 
-        // Create a JWT token for authorizing a user
-        public string GenerateToken(UserModel user)
+        public List<Claim> AddClaims(UserModel user, string roleName)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
+            List<Claim> claims = new();
+            claims.Add(new Claim(ClaimTypes.Name, user.Email));
+            claims.Add(new(ClaimTypes.Role, roleName));
+            return claims;
+        }
+
+        // Create a JWT token for authorizing a user
+        public SecurityToken GenerateToken(List<Claim> claims)
+        {         
             var key = Encoding.ASCII.GetBytes("MY_BIG_SECRET_KEY_LKHSFTYQFTSBDHF@($)(#)34324");
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, user.Email)
-                }),
-                Expires = DateTime.UtcNow.AddMinutes(5),
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(10),
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
-            return tokenString;
+            var token = new JwtSecurityTokenHandler().CreateToken(tokenDescriptor);                  
+            return token;
         }
     }
 }

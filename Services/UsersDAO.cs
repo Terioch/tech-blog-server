@@ -37,7 +37,7 @@ namespace TechBlog.Services
 
             if (salt == null) return null;            
             user.Password = security.HashPassword(user.Password, salt);
-            UserModel fetchedUser = FetchQuery(user, statement);
+            UserModel fetchedUser = FetchUserQuery(user, statement);
             return fetchedUser;
         }        
 
@@ -49,6 +49,15 @@ namespace TechBlog.Services
             user.Password = security.HashPassword(user.Password, salt);
             int id = InsertQuery(user, statement, salt);
             return id;
+        }
+
+        public string GetRoleByUser(int id)
+        {            
+            string statement = "SELECT roleId FROM dbo.UserRoles WHERE userId = @id";
+            int roleId = FetchIdQuery(id, statement);
+            statement = "SELECT name from dbo.Roles WHERE id = @id";
+            string role = FetchRoleQuery(roleId, statement);
+            return role;
         }
 
         public int InsertQuery(UserModel user, string statement, string salt)
@@ -101,7 +110,7 @@ namespace TechBlog.Services
         }
 
 
-        public UserModel FetchQuery(UserModel user, string statement)
+        public UserModel FetchUserQuery(UserModel user, string statement)
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
@@ -132,6 +141,54 @@ namespace TechBlog.Services
                 Console.WriteLine(exc.Message);
             }
             return fetchedUser;
+        }
+
+        public int FetchIdQuery(int id, string statement)
+        {
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            command.Parameters.AddWithValue("@id", id);
+            int newId = -1;
+
+            try
+            {
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    newId = (int)reader[0];
+                }
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
+            return newId;
+        }
+
+        public string FetchRoleQuery(int roleId, string statement)
+        {
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            command.Parameters.AddWithValue("@id", roleId);
+            string role = "";
+
+            try
+            {
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    role = (string)reader[0];
+                }
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
+            return role;
         }
 
         public string FetchSaltQuery(UserModel user)

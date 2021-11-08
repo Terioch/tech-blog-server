@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TechBlog.Models;
 using TechBlog.Services;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace TechBlog.Controllers
 {
@@ -44,11 +47,19 @@ namespace TechBlog.Controllers
                 {
                     // Return email present error message                
                     throw new Exception("This email address is already associated with an account. Either use a different email or login if you are the account holder.");
-                }
-
-                int userId = repository.InsertUser(user);
-                string token = security.GenerateToken(user);
-                return Ok(new { Id = userId, Token = token });
+                }                           
+                
+                int id = repository.InsertUser(user);
+                string roleName = repository.GetRoleByUser(id);
+                List<Claim> claims = security.AddClaims(user, roleName);
+                SecurityToken token = security.GenerateToken(claims);
+                string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+                return Ok(new 
+                { 
+                    Id = id, 
+                    Token = tokenString, 
+                    Expires = token.ValidTo 
+                });
             }
             catch (Exception exc)
             {
