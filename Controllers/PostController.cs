@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace TechBlog.Controllers
 {
-    [ApiController]
+    [ApiController]  
     [Route("/api/posts")]
     public class PostController : ControllerBase
     {      
@@ -28,7 +28,7 @@ namespace TechBlog.Controllers
         }
 
         [HttpGet("adminGet")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public ActionResult<IEnumerable<PostModel>> AdminGet()
         {
             List<PostModel> posts = repository.GetAllPosts();
@@ -43,7 +43,7 @@ namespace TechBlog.Controllers
         }
 
         [HttpGet("adminGetOne/{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public ActionResult<PostModel> AdminGetOne(int id)
         {
             List<PostModel> posts = repository.GetPostById(id);
@@ -51,7 +51,7 @@ namespace TechBlog.Controllers
         }
       
         [HttpPost("create")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public ActionResult<int> Create([FromBody] PostModel post)
         {
             int postId = repository.Insert(post);            
@@ -59,7 +59,7 @@ namespace TechBlog.Controllers
         }
 
         [HttpPut("update")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public ActionResult<int> Update([FromBody] PostModel post)
         {
             int postId = repository.Update(post);
