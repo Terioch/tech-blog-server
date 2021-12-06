@@ -45,20 +45,26 @@ namespace TechBlog.Services
         {
             string statement = "INSERT INTO dbo.Users (username, email, password, salt) OUTPUT Inserted.Id VALUES (@username, @email, @password, @salt)";
             string salt = security.GenerateSalt();
-
             user.Password = security.HashPassword(user.Password, salt);
-            int id = InsertQuery(user, statement, salt);
+            int id = InsertQuery(user, statement, salt);                       
             return id;
         }
+        
+        public void InsertUserRole(int id, string roleName)
+        {
+            string statement = "SELECT * FROM dbo.Roles WHERE name = @name";
+            RoleModel role = FetchRoleByNameQuery(roleName, statement);
+            InsertUserRoleQuery(id, role.Id);
+        }
 
-        public string GetRoleByUser(int id)
+        public string GetRoleByUserId(int id)
         {            
             string statement = "SELECT roleId FROM dbo.UserRoles WHERE userId = @id";
             int roleId = FetchIdQuery(id, statement);
-            statement = "SELECT name from dbo.Roles WHERE id = @id";
-            string role = FetchRoleQuery(roleId, statement);
-            return role;
-        }
+            statement = "SELECT * from dbo.Roles WHERE id = @id";
+            RoleModel role = FetchRoleByIdQuery(roleId, statement);
+            return role.Name;
+        }        
 
         public int InsertQuery(UserModel user, string statement, string salt)
         {
@@ -70,6 +76,28 @@ namespace TechBlog.Services
             command.Parameters.AddWithValue("@email", user.Email);
             command.Parameters.AddWithValue("@password", user.Password);
             command.Parameters.AddWithValue("@salt", salt);
+
+            try
+            {
+                connection.Open();
+                id = (int)command.ExecuteScalar();               
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
+            return id;
+        }
+
+        public int InsertUserRoleQuery(int userId, int roleId)
+        {
+            string statement = "INSERT into dbo.UserRoles VALUES (@userId, @roleId)";
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            int id = -1;
+
+            command.Parameters.AddWithValue("@userId", userId);
+            command.Parameters.AddWithValue("@roleId", roleId);
 
             try
             {
@@ -114,7 +142,7 @@ namespace TechBlog.Services
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            UserModel fetchedUser = null;
+            UserModel fetchedUser = new(); // Switched from null assignment
 
             command.Parameters.AddWithValue("@username", user.Username);
             command.Parameters.AddWithValue("@email", user.Email);
@@ -167,12 +195,12 @@ namespace TechBlog.Services
             return newId;
         }
 
-        public string FetchRoleQuery(int roleId, string statement)
+        public RoleModel FetchRoleByIdQuery(int roleId, string statement)
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
             command.Parameters.AddWithValue("@id", roleId);
-            string role = "";
+            RoleModel role = new();
 
             try
             {
@@ -181,7 +209,39 @@ namespace TechBlog.Services
 
                 if (reader.Read())
                 {
-                    role = (string)reader[0];
+                    role = new()
+                    {
+                        Id = (int)reader[0],
+                        Name = (string)reader[1]
+                    };
+                }
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
+            return role;
+        }
+
+        public RoleModel FetchRoleByNameQuery(string roleName, string statement)
+        {
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            command.Parameters.AddWithValue("@name", roleName);
+            RoleModel role = new();
+
+            try
+            {
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    role = new() 
+                    { 
+                        Id = (int)reader[0],
+                        Name = (string)reader[1]
+                    };
                 }
             }
             catch (Exception exc)

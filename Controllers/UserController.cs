@@ -15,14 +15,7 @@ namespace TechBlog.Controllers
     [ApiController]
     [Route("/api/users")]
     public class UserController : ControllerBase
-    {
-        [HttpPost]
-        [Authorize]
-        public ActionResult<string> IsAuthenticated()
-        {
-            return "User is authenticated";
-        }
-
+    {        
         readonly UsersDAO repository;
         readonly SecurityService security;
 
@@ -30,7 +23,14 @@ namespace TechBlog.Controllers
         {
             repository = new UsersDAO();
             security = new SecurityService();
-        }        
+        }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult<string> IsAuthenticated()
+        {
+            return "User is authenticated";
+        }
 
         [HttpPost("register")]
         public ActionResult<int> ProcessRegistration([FromBody] UserModel user)
@@ -50,7 +50,8 @@ namespace TechBlog.Controllers
                 }                           
                 
                 int id = repository.InsertUser(user);
-                string roleName = repository.GetRoleByUser(id);
+                repository.InsertUserRole(id, "User");
+                string roleName = repository.GetRoleByUserId(id);
                 List<Claim> claims = security.AddClaims(user, roleName);
                 SecurityToken token = security.GenerateToken(claims);
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -82,7 +83,7 @@ namespace TechBlog.Controllers
                     throw new Exception("These account details are not valid. Please try again.");
                 }
 
-                string roleName = repository.GetRoleByUser(fetchedUser.Id);
+                string roleName = repository.GetRoleByUserId(fetchedUser.Id);
                 List<Claim> claims = security.AddClaims(user, roleName);
                 SecurityToken token = security.GenerateToken(claims);
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(token);

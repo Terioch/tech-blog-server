@@ -7,7 +7,7 @@ namespace TechBlog.Models
 {
     public class UserRolesModel
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public int UserId { get; set; }
+        public int RoleId { get; set; }
     }
 }
