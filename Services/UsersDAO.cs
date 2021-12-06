@@ -89,12 +89,11 @@ namespace TechBlog.Services
             return id;
         }
 
-        public int InsertUserRoleQuery(int userId, int roleId)
+        public void InsertUserRoleQuery(int userId, int roleId)
         {
             string statement = "INSERT into dbo.UserRoles VALUES (@userId, @roleId)";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            int id = -1;
 
             command.Parameters.AddWithValue("@userId", userId);
             command.Parameters.AddWithValue("@roleId", roleId);
@@ -102,13 +101,12 @@ namespace TechBlog.Services
             try
             {
                 connection.Open();
-                id = (int)command.ExecuteScalar();               
+                command.ExecuteScalar();               
             }
             catch (Exception exc)
             {
                 Console.WriteLine(exc.Message);
             }
-            return id;
         }
 
         public bool SuccessQuery(UserModel user, string statement)
