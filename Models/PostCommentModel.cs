@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace TechBlog.Models
 {
-    public class PostComment
+    public class PostCommentModel
     {        
         public int Id { get; set; }
         public int PostId { get; set; }

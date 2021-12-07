@@ -1,22 +1,21 @@
-﻿using TechBlog.Models;
-using System.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Data.SqlClient;
+using TechBlog.Models;
 
 namespace TechBlog.Services
 {
-    public class PostsDAO : IPostDataService
+    public class PostCommentsDAO : ICommentDataService
     {
         readonly string connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=TechBlog;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
-        public List<PostModel> GetAllPosts()
+        public List<PostCommentModel> GetAllComments()
         {
-            string statement = "SELECT * FROM dbo.Posts";
+            string statement = "SELECT * FROM dbo.PostComments";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            List<PostModel> posts = new();
+            List<PostCommentModel> comments = new();
 
             try
             {
@@ -25,30 +24,29 @@ namespace TechBlog.Services
 
                 while (reader.Read())
                 {
-                    posts.Add(new PostModel
+                    comments.Add(new()
                     {
                         Id = (int)reader[0],
-                        Title = (string)reader[1],
-                        Date = (long)reader[2],
-                        Author = (string)reader[3],
-                        ImgSrc = (string)(reader[4]),
-                        Excerpt = (string)reader[5],
-                        Content = (string)reader[6],
+                        PostId = (int)reader[1],
+                        Value = (string)reader[2],
+                        SenderUsername = (string)reader[3],
+                        Date = (DateTime)reader[4],
                     });
                 }
-            } catch(Exception exc)
-            {                
+            }
+            catch (Exception exc)
+            {
                 throw new Exception(exc.Message);
             }
-            return posts;
+            return comments;
         }
 
-        public List<PostModel> GetPostById(int Id)
+        public List<PostCommentModel> GetCommentById(int Id)
         {
-            string statement = "SELECT * FROM dbo.Posts WHERE id = @Id";
+            string statement = "SELECT * FROM dbo.PostComments WHERE id = @Id";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            List<PostModel> posts = new();
+            List<PostCommentModel> comments = new();
 
             command.Parameters.AddWithValue("@Id", Id);
 
@@ -59,15 +57,13 @@ namespace TechBlog.Services
 
                 while (reader.Read())
                 {
-                    posts.Add(new PostModel
+                    comments.Add(new()
                     {
                         Id = (int)reader[0],
-                        Title = (string)reader[1],
-                        Date = (long)reader[2],
-                        Author = (string)reader[3],
-                        ImgSrc = (string)(reader[4]),
-                        Excerpt = (string)reader[5],
-                        Content = (string)reader[6],
+                        PostId = (int)reader[1],
+                        Value = (string)reader[2],
+                        SenderUsername= (string)reader[3],
+                        Date = (DateTime)reader[4],
                     });
                 }
             }
@@ -75,48 +71,43 @@ namespace TechBlog.Services
             {
                 throw new Exception(exc.Message);
             }
-            return posts;
+            return comments;
         }
 
-        public int Insert(PostModel post)
+        public int Insert(PostCommentModel comment)
         {
-            string statement = "INSERT INTO dbo.Posts (title, date, author, imgSrc, excerpt, content) OUTPUT Inserted.Id VALUES (@Title, @Date, @Author, @ImgSrc, @Excerpt, @Content)";
+            string statement = "INSERT INTO dbo.PostComments (PostId, Value, SenderUsername, Date) OUTPUT Inserted.Id VALUES (@PostId, @Value, @SenderUsername, @Date)";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
             int id = -1;
 
-            command.Parameters.AddWithValue("@Title", post.Title);
-            command.Parameters.AddWithValue("@Date", post.Date);
-            command.Parameters.AddWithValue("@Author", post.Author);
-            command.Parameters.AddWithValue("@ImgSrc", post.ImgSrc);
-            command.Parameters.AddWithValue("@Excerpt", post.Excerpt);
-            command.Parameters.AddWithValue("@Content", post.Content);   
+            command.Parameters.AddWithValue("@PostId", comment.PostId);
+            command.Parameters.AddWithValue("@Value", comment.Value);
+            command.Parameters.AddWithValue("@SenderUsername", comment.SenderUsername);
+            command.Parameters.AddWithValue("@Date", comment.Date);
 
             try
             {
                 connection.Open();
                 id = Convert.ToInt32(command.ExecuteScalar());
-            } catch (Exception exc)
+            }
+            catch (Exception exc)
             {
                 throw new Exception(exc.Message);
             }
             return id;
         }
 
-        public int Update(PostModel post)
+        public int Update(PostCommentModel comment)
         {
-            string statement = "UPDATE dbo.Posts SET title = @Title, date = @Date, author = @Author, imgSrc = @ImgSrc, excerpt = @Excerpt, content = @Content OUTPUT Inserted.Id WHERE id = @Id";
+            string statement = "UPDATE dbo.PostComments SET Value = @Value, Date = @Date OUTPUT Inserted.Id WHERE id = @Id";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
             int id = -1;
 
-            command.Parameters.AddWithValue("@Id", post.Id);
-            command.Parameters.AddWithValue("@Title", post.Title);
-            command.Parameters.AddWithValue("@Date", post.Date);
-            command.Parameters.AddWithValue("@Author", post.Author);
-            command.Parameters.AddWithValue("@ImgSrc", post.ImgSrc);
-            command.Parameters.AddWithValue("@Excerpt", post.Excerpt);
-            command.Parameters.AddWithValue("@Content", post.Content);
+            command.Parameters.AddWithValue("@Id", comment.Id);
+            command.Parameters.AddWithValue("@Value", comment.Value);
+            command.Parameters.AddWithValue("@Date", comment.Date);           
 
             try
             {
@@ -132,7 +123,7 @@ namespace TechBlog.Services
 
         public int Delete(int id)
         {
-            string statement = "DELETE FROM dbo.Posts OUTPUT Inserted.Id WHERE Id = @Id";
+            string statement = "DELETE FROM dbo.PostComments OUTPUT Inserted.Id WHERE Id = @Id";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
 
