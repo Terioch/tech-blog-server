@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
+using TechBlog.Services;
 
 namespace TechBlog
 {
@@ -50,6 +51,9 @@ namespace TechBlog
                 };
             });
 
+            // Dependency Injection  
+            services.AddScoped<IPostDataService, PostsDAO>();
+            services.AddScoped<ICommentDataService, PostCommentsDAO>();
 
             services.AddCors();
             services.AddControllers();

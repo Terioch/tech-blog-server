@@ -25,7 +25,8 @@ namespace TechBlog.Controllers
             return comments;
         }
    
-        [HttpGet("{postId}")]
+        [Route("/api/posts/{postId}/comments")]
+        [HttpGet]
         public ActionResult<IEnumerable<PostCommentModel>> Get(int postId)
         {
             List<PostCommentModel> comments = repository.GetCommentsByPostId(postId);
@@ -40,23 +41,31 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost("create")]
-        public ActionResult<int> Create(PostCommentModel comment)
+        public ActionResult<int> Create([FromBody] PostCommentModel comment)
         {
             int id = repository.Insert(comment);
             return id;
         }
 
-        [HttpDelete]
+        [HttpPut("update")]
+        public ActionResult<int> Update([FromBody] PostCommentModel comment)
+        {
+            int id = repository.Update(comment);
+            return id;
+        }
+
+        [HttpDelete("delete/{id}")]
         public ActionResult<int> Delete(int id)
         {
             repository.Delete(id);
             return id;
         }
 
-        [HttpDelete("{postId}")]
+        [Route("/api/posts/{postId}/comments")]
+        [HttpDelete]
         public ActionResult<int> DeleteByPostId(int postId)
         {
-            repository.Delete(postId);
+            repository.DeleteCommentsByPostId(postId);
             return postId;
         }
     }

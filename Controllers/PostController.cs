@@ -12,12 +12,14 @@ namespace TechBlog.Controllers
     [ApiController]  
     [Route("/api/posts")]
     public class PostController : ControllerBase
-    {      
+    {  
         readonly PostsDAO repository;
+        private readonly ICommentDataService commentRepository;
 
-        public PostController()
+        public PostController(ICommentDataService commentRepository)
         {          
             repository = new PostsDAO();
+            this.commentRepository = commentRepository;
         }
 
         [HttpGet]
@@ -64,6 +66,14 @@ namespace TechBlog.Controllers
         {
             int postId = repository.Update(post);
             return postId;
+        }
+
+        [HttpDelete("delete/{id}")]
+        public ActionResult<int> Delete(int id)
+        {
+            repository.Delete(id);
+            commentRepository.DeleteCommentsByPostId(id);
+            return id;
         }
     }
 }
