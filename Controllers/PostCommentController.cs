@@ -8,7 +8,7 @@ namespace TechBlog.Controllers
 {
     [ApiController]
     [Route("/api/comments")]
-    [Authorize(Roles = "Admin, User")]
+    // [Authorize(Roles = "Admin, User")]
     public class PostCommentController : ControllerBase
     {
         private readonly ICommentDataService repository;
@@ -61,7 +61,7 @@ namespace TechBlog.Controllers
             return id;
         }
 
-        [Route("/api/posts/{postId}/comments")]
+        [Route("/api/posts/{postId}/comments/delete")]
         [HttpDelete]
         public ActionResult<int> DeleteByPostId(int postId)
         {
