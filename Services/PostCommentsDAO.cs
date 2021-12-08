@@ -41,6 +41,39 @@ namespace TechBlog.Services
             return comments;
         }
 
+        public List<PostCommentModel> GetCommentsByPostId(int postId)
+        {
+            string statement = "SELECT * FROM dbo.PostComments WHERE PostId = @PostId";
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+            List<PostCommentModel> comments = new();
+
+            command.Parameters.AddWithValue("@PostId", postId);
+
+            try
+            {
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    comments.Add(new()
+                    {
+                        Id = (int)reader[0],
+                        PostId = (int)reader[1],
+                        Value = (string)reader[2],
+                        SenderUsername = (string)reader[3],
+                        Date = (DateTime)reader[4],
+                    });
+                }
+            }
+            catch (Exception exc)
+            {
+                throw new Exception(exc.Message);
+            }
+            return comments;
+        }
+
         public List<PostCommentModel> GetCommentById(int Id)
         {
             string statement = "SELECT * FROM dbo.PostComments WHERE id = @Id";
@@ -123,7 +156,7 @@ namespace TechBlog.Services
 
         public int Delete(int id)
         {
-            string statement = "DELETE FROM dbo.PostComments OUTPUT Inserted.Id WHERE Id = @Id";
+            string statement = "DELETE FROM dbo.PostComments WHERE Id = @Id";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
 
@@ -132,13 +165,33 @@ namespace TechBlog.Services
             try
             {
                 connection.Open();
-                id = Convert.ToInt32(command.ExecuteScalar());
+                command.ExecuteReader();
             }
             catch (Exception exc)
             {
                 throw new Exception(exc.Message);
             }
             return id;
+        }
+
+        public int DeleteCommentsByPostId(int postId)
+        {
+            string statement = "DELETE FROM dbo.PostComments WHERE PostId = @PostId";
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(statement, connection);
+
+            command.Parameters.AddWithValue("@PostId", postId);
+
+            try
+            {
+                connection.Open();
+                command.ExecuteReader();
+            }
+            catch (Exception exc)
+            {
+                throw new Exception(exc.Message);
+            }
+            return postId;
         }
     }
 }
