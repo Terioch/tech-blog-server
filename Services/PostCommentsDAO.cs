@@ -30,7 +30,7 @@ namespace TechBlog.Services
                         PostId = (int)reader[1],
                         Value = (string)reader[2],
                         SenderUsername = (string)reader[3],
-                        Date = (DateTime)reader[4],
+                        Date = (long)reader[4],
                     });
                 }
             }
@@ -63,7 +63,7 @@ namespace TechBlog.Services
                         PostId = (int)reader[1],
                         Value = (string)reader[2],
                         SenderUsername = (string)reader[3],
-                        Date = (DateTime)reader[4],
+                        Date = (long)reader[4],
                     });
                 }
             }
@@ -96,7 +96,7 @@ namespace TechBlog.Services
                         PostId = (int)reader[1],
                         Value = (string)reader[2],
                         SenderUsername= (string)reader[3],
-                        Date = (DateTime)reader[4],
+                        Date = (long)reader[4],
                     });
                 }
             }

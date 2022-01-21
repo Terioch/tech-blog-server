@@ -132,7 +132,7 @@ namespace TechBlog.Services
 
         public int Delete(int id)
         {
-            string statement = "DELETE FROM dbo.Posts OUTPUT Inserted.Id WHERE Id = @Id";
+            string statement = "DELETE FROM dbo.Posts WHERE Id = @Id";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
 
@@ -141,7 +141,7 @@ namespace TechBlog.Services
             try
             {
                 connection.Open();
-                id = Convert.ToInt32(command.ExecuteScalar());
+                command.ExecuteReader();
             }
             catch (Exception exc)
             {

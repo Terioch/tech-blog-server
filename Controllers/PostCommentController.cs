@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using TechBlog.Models;
 using TechBlog.Services;
+using System;
 
 namespace TechBlog.Controllers
 {
     [ApiController]
     [Route("/api/comments")]
-    // [Authorize(Roles = "Admin, User")]
+    [Authorize]
     public class PostCommentController : ControllerBase
     {
         private readonly ICommentDataService repository;
@@ -40,21 +41,21 @@ namespace TechBlog.Controllers
             return comments[0];
         }
 
-        [HttpPost("create")]
+        [HttpPost("[action]")]
         public ActionResult<int> Create([FromBody] PostCommentModel comment)
         {
             int id = repository.Insert(comment);
             return id;
         }
 
-        [HttpPut("update")]
+        [HttpPut("[action]")]
         public ActionResult<int> Update([FromBody] PostCommentModel comment)
         {
             int id = repository.Update(comment);
             return id;
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("[action]/{id}")]
         public ActionResult<int> Delete(int id)
         {
             repository.Delete(id);

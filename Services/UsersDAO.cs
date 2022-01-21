@@ -140,7 +140,7 @@ namespace TechBlog.Services
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            UserModel fetchedUser = new(); // Switched from null assignment
+            UserModel fetchedUser = null;
 
             command.Parameters.AddWithValue("@username", user.Username);
             command.Parameters.AddWithValue("@email", user.Email);

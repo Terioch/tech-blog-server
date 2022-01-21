@@ -29,7 +29,7 @@ namespace TechBlog.Controllers
             return posts;
         }
 
-        [HttpGet("adminGet")]
+        [HttpGet("[action]")]
         [Authorize(Roles = "Admin")]
         public ActionResult<IEnumerable<PostModel>> AdminGet()
         {
@@ -52,7 +52,7 @@ namespace TechBlog.Controllers
             return posts[0];
         }
       
-        [HttpPost("create")]
+        [HttpPost("[action]")]
         [Authorize(Roles = "Admin")]
         public ActionResult<int> Create([FromBody] PostModel post)
         {
@@ -60,7 +60,7 @@ namespace TechBlog.Controllers
             return postId;
         }
 
-        [HttpPut("update")]
+        [HttpPut("[action]")]
         [Authorize(Roles = "Admin")]
         public ActionResult<int> Update([FromBody] PostModel post)
         {
@@ -68,7 +68,7 @@ namespace TechBlog.Controllers
             return postId;
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("[action]/{id}")]
         public ActionResult<int> Delete(int id)
         {
             repository.Delete(id);

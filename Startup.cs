@@ -91,7 +91,7 @@ namespace TechBlog
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            });
+            });            
         }
     }
 }

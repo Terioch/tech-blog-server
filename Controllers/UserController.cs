@@ -39,13 +39,11 @@ namespace TechBlog.Controllers
             {
                 if (repository.IsUsernameFound(user))
                 {
-                    // Return username present error message
                     throw new Exception("This username is taken. Please choose a different name.");
                 }
 
                 if (repository.IsEmailFound(user))
-                {
-                    // Return email present error message                
+                {             
                     throw new Exception("This email address is already associated with an account. Either use a different email or login if you are the account holder.");
                 }                           
                 
@@ -78,9 +76,8 @@ namespace TechBlog.Controllers
                 UserModel fetchedUser = repository.GetUserByFullCredentials(user);
 
                 if (fetchedUser == null)
-                {
-                    // Return login error message
-                    throw new Exception("These account details are not valid. Please try again.");
+                {                
+                    throw new Exception("Invalid account details. Please try again.");
                 }
 
                 string roleName = repository.GetRoleByUserId(fetchedUser.Id);
