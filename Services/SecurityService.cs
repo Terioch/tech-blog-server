@@ -10,11 +10,23 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace TechBlog.Services
 {
     public class SecurityService
     {
+        private readonly IConfiguration config;
+
+        public SecurityService(IConfiguration config)
+        {
+            this.config = config;
+        }
+
+        public SecurityService()
+        {
+        }
+
         public string HashPassword(string password, string salt)
         {
             HashAlgorithm algorithm = new SHA256CryptoServiceProvider();
@@ -45,7 +57,7 @@ namespace TechBlog.Services
         // Create a JWT token for authorizing a user
         public SecurityToken GenerateToken(List<Claim> claims)
         {         
-            var key = Encoding.ASCII.GetBytes("MY_BIG_SECRET_KEY_LKHSFTYQFTSBDHF@($)(#)34324");
+            var key = Encoding.ASCII.GetBytes(config["JWT_SECRET"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),

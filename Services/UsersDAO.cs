@@ -8,7 +8,7 @@ using TechBlog.Models;
 
 namespace TechBlog.Services
 {
-    public class UsersDAO
+    public class UsersDAO : IUserDataService
     {
         readonly string connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=TechBlog;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         readonly SecurityService security;
