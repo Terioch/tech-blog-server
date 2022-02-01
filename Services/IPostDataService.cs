@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TechBlog.Services
 {
-    interface IPostDataService
+    public interface IPostDataService
     {
         public List<PostModel> GetAllPosts();
         public List<PostModel> GetPostById(int Id);

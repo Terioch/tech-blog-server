@@ -12,17 +12,17 @@ namespace TechBlog.Controllers
     [Authorize]
     public class PostCommentController : ControllerBase
     {
-        private readonly ICommentDataService repository;
+        private readonly ICommentDataService repo;
 
-        public PostCommentController(ICommentDataService repository)
+        public PostCommentController(ICommentDataService repo)
         {
-            this.repository = repository;
+            this.repo = repo;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<PostCommentModel>> Get()
         {
-            List<PostCommentModel> comments = repository.GetAllComments();
+            List<PostCommentModel> comments = repo.GetAllComments();
             return comments;
         }
    
@@ -30,35 +30,35 @@ namespace TechBlog.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<PostCommentModel>> Get(int postId)
         {
-            List<PostCommentModel> comments = repository.GetCommentsByPostId(postId);
+            List<PostCommentModel> comments = repo.GetCommentsByPostId(postId);
             return comments;
         }
 
         [HttpGet("{id}")]
         public ActionResult<PostCommentModel> GetOne(int id)
         {
-            List<PostCommentModel> comments = repository.GetCommentById(id);
+            List<PostCommentModel> comments = repo.GetCommentById(id);
             return comments[0];
         }
 
         [HttpPost("[action]")]
         public ActionResult<int> Create([FromBody] PostCommentModel comment)
         {
-            int id = repository.Insert(comment);
+            int id = repo.Insert(comment);
             return id;
         }
 
         [HttpPut("[action]")]
         public ActionResult<int> Update([FromBody] PostCommentModel comment)
         {
-            int id = repository.Update(comment);
+            int id = repo.Update(comment);
             return id;
         }
 
         [HttpDelete("[action]/{id}")]
         public ActionResult<int> Delete(int id)
         {
-            repository.Delete(id);
+            repo.Delete(id);
             return id;
         }
 
@@ -66,7 +66,7 @@ namespace TechBlog.Controllers
         [HttpDelete]
         public ActionResult<int> DeleteByPostId(int postId)
         {
-            repository.DeleteCommentsByPostId(postId);
+            repo.DeleteCommentsByPostId(postId);
             return postId;
         }
     }

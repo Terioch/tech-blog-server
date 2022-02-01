@@ -1,18 +1,16 @@
 ﻿using TechBlog.Models;
-using System.Data.SqlClient;
+using Npgsql;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace TechBlog.Services
 {
-    public class PostsDAO : IPostDataService
+    public class PostsPgsqlDAO : IPostDataService
     {
         private readonly string connectionString;
 
-        public PostsDAO(IConfiguration config)
+        public PostsPgsqlDAO(IConfiguration config)
         {
             connectionString = config.GetConnectionString("SqlServerDevelopment");
         }
@@ -20,14 +18,14 @@ namespace TechBlog.Services
         public List<PostModel> GetAllPosts()
         {
             string statement = "SELECT * FROM dbo.Posts";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             List<PostModel> posts = new();
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 while (reader.Read())
                 {
@@ -42,8 +40,9 @@ namespace TechBlog.Services
                         Content = (string)reader[6],
                     });
                 }
-            } catch(Exception exc)
-            {                
+            }
+            catch (Exception exc)
+            {
                 throw new Exception(exc.Message);
             }
             return posts;
@@ -51,17 +50,17 @@ namespace TechBlog.Services
 
         public List<PostModel> GetPostById(int Id)
         {
-            string statement = "SELECT * FROM dbo.Posts WHERE id = @Id";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "SELECT * FROM dbo.Posts WHERE id = $1";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             List<PostModel> posts = new();
 
-            command.Parameters.AddWithValue("@Id", Id);
+            command.Parameters.AddWithValue("$1", Id);
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 while (reader.Read())
                 {
@@ -86,23 +85,24 @@ namespace TechBlog.Services
 
         public int Insert(PostModel post)
         {
-            string statement = "INSERT INTO dbo.Posts (title, date, author, imgSrc, excerpt, content) OUTPUT Inserted.Id VALUES (@Title, @Date, @Author, @ImgSrc, @Excerpt, @Content)";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "INSERT INTO dbo.Posts (title, date, author, imgSrc, excerpt, content) OUTPUT Inserted.Id VALUES ($1, $2, $3, $4, $5, $6)";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             int id = -1;
 
-            command.Parameters.AddWithValue("@Title", post.Title);
-            command.Parameters.AddWithValue("@Date", post.Date);
-            command.Parameters.AddWithValue("@Author", post.Author);
-            command.Parameters.AddWithValue("@ImgSrc", post.ImgSrc);
-            command.Parameters.AddWithValue("@Excerpt", post.Excerpt);
-            command.Parameters.AddWithValue("@Content", post.Content);   
+            command.Parameters.AddWithValue("$1", post.Title);
+            command.Parameters.AddWithValue("$2", post.Date);
+            command.Parameters.AddWithValue("$3", post.Author);
+            command.Parameters.AddWithValue("$4", post.ImgSrc);
+            command.Parameters.AddWithValue("$5", post.Excerpt);
+            command.Parameters.AddWithValue("$6", post.Content);
 
             try
             {
                 connection.Open();
                 id = Convert.ToInt32(command.ExecuteScalar());
-            } catch (Exception exc)
+            }
+            catch (Exception exc)
             {
                 throw new Exception(exc.Message);
             }
@@ -111,18 +111,18 @@ namespace TechBlog.Services
 
         public int Update(PostModel post)
         {
-            string statement = "UPDATE dbo.Posts SET title = @Title, date = @Date, author = @Author, imgSrc = @ImgSrc, excerpt = @Excerpt, content = @Content OUTPUT Inserted.Id WHERE id = @Id";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "UPDATE dbo.Posts SET title = $1, date = $2, author = $3, imgSrc = $4, excerpt = $5, content = $6 OUTPUT Inserted.Id WHERE id = $7";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             int id = -1;
             
-            command.Parameters.AddWithValue("@Title", post.Title);
-            command.Parameters.AddWithValue("@Date", post.Date);
-            command.Parameters.AddWithValue("@Author", post.Author);
-            command.Parameters.AddWithValue("@ImgSrc", post.ImgSrc);
-            command.Parameters.AddWithValue("@Excerpt", post.Excerpt);
-            command.Parameters.AddWithValue("@Content", post.Content);
-            command.Parameters.AddWithValue("@Id", post.Id);
+            command.Parameters.AddWithValue("$1", post.Title);
+            command.Parameters.AddWithValue("$2", post.Date);
+            command.Parameters.AddWithValue("$3", post.Author);
+            command.Parameters.AddWithValue("$4", post.ImgSrc);
+            command.Parameters.AddWithValue("$5", post.Excerpt);
+            command.Parameters.AddWithValue("$6", post.Content);
+            command.Parameters.AddWithValue("$7", post.Id);
 
             try
             {
@@ -138,11 +138,11 @@ namespace TechBlog.Services
 
         public int Delete(int id)
         {
-            string statement = "DELETE FROM dbo.Posts WHERE Id = @Id";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "DELETE FROM dbo.Posts WHERE Id = $1";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
 
-            command.Parameters.AddWithValue("@Id", id);
+            command.Parameters.AddWithValue("$1", id);
 
             try
             {

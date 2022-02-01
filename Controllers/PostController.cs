@@ -13,19 +13,19 @@ namespace TechBlog.Controllers
     [Route("/api/posts")]
     public class PostController : ControllerBase
     {  
-        readonly PostsDAO repository;
-        private readonly ICommentDataService commentRepository;
+        private readonly IPostDataService repo;
+        private readonly ICommentDataService commentRepo;
 
-        public PostController(ICommentDataService commentRepository)
-        {          
-            repository = new PostsDAO();
-            this.commentRepository = commentRepository;
+        public PostController(IPostDataService repo, ICommentDataService commentRepo)
+        {
+            this.repo = repo;
+            this.commentRepo = commentRepo;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<PostModel>> Get()
         {
-            List<PostModel> posts = repository.GetAllPosts();            
+            List<PostModel> posts = repo.GetAllPosts();            
             return posts;
         }
 
@@ -33,14 +33,14 @@ namespace TechBlog.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult<IEnumerable<PostModel>> AdminGet()
         {
-            List<PostModel> posts = repository.GetAllPosts();
+            List<PostModel> posts = repo.GetAllPosts();
             return posts;
         }
 
         [HttpGet("{id}")]
         public ActionResult<PostModel> GetOne(int id)
         {
-            List<PostModel> posts = repository.GetPostById(id);
+            List<PostModel> posts = repo.GetPostById(id);
             return posts[0];            
         }
 
@@ -48,7 +48,7 @@ namespace TechBlog.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult<PostModel> AdminGetOne(int id)
         {
-            List<PostModel> posts = repository.GetPostById(id);
+            List<PostModel> posts = repo.GetPostById(id);
             return posts[0];
         }
       
@@ -56,7 +56,7 @@ namespace TechBlog.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult<int> Create([FromBody] PostModel post)
         {
-            int postId = repository.Insert(post);            
+            int postId = repo.Insert(post);            
             return postId;
         }
 
@@ -64,15 +64,15 @@ namespace TechBlog.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult<int> Update([FromBody] PostModel post)
         {
-            int postId = repository.Update(post);
+            int postId = repo.Update(post);
             return postId;
         }
 
         [HttpDelete("[action]/{id}")]
         public ActionResult<int> Delete(int id)
         {
-            repository.Delete(id);
-            commentRepository.DeleteCommentsByPostId(id);
+            repo.Delete(id);
+            commentRepo.DeleteCommentsByPostId(id);
             return id;
         }
     }

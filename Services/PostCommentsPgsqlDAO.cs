@@ -1,17 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+﻿using TechBlog.Models;
+using Npgsql;
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using TechBlog.Models;
 
 namespace TechBlog.Services
 {
-    public class PostCommentsDAO : ICommentDataService
+    public class PostCommentsPgsqlDAO : ICommentDataService
     {
         private readonly string connectionString;
 
-        public PostCommentsDAO(IConfiguration config)
+        public PostCommentsPgsqlDAO(IConfiguration config)
         {
             connectionString = config.GetConnectionString("SqlServerDevelopment");
         }
@@ -19,14 +18,14 @@ namespace TechBlog.Services
         public List<PostCommentModel> GetAllComments()
         {
             string statement = "SELECT * FROM dbo.PostComments";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             List<PostCommentModel> comments = new();
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 while (reader.Read())
                 {
@@ -49,17 +48,17 @@ namespace TechBlog.Services
 
         public List<PostCommentModel> GetCommentsByPostId(int postId)
         {
-            string statement = "SELECT * FROM dbo.PostComments WHERE PostId = @PostId";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "SELECT * FROM dbo.PostComments WHERE PostId = $1";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             List<PostCommentModel> comments = new();
 
-            command.Parameters.AddWithValue("@PostId", postId);
+            command.Parameters.AddWithValue("$1", postId);
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 while (reader.Read())
                 {
@@ -82,17 +81,17 @@ namespace TechBlog.Services
 
         public List<PostCommentModel> GetCommentById(int Id)
         {
-            string statement = "SELECT * FROM dbo.PostComments WHERE id = @Id";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "SELECT * FROM dbo.PostComments WHERE id = $1";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             List<PostCommentModel> comments = new();
 
-            command.Parameters.AddWithValue("@Id", Id);
+            command.Parameters.AddWithValue("$1", Id);
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 while (reader.Read())
                 {
@@ -101,7 +100,7 @@ namespace TechBlog.Services
                         Id = (int)reader[0],
                         PostId = (int)reader[1],
                         Value = (string)reader[2],
-                        SenderUsername= (string)reader[3],
+                        SenderUsername = (string)reader[3],
                         Date = (long)reader[4],
                     });
                 }
@@ -115,15 +114,15 @@ namespace TechBlog.Services
 
         public int Insert(PostCommentModel comment)
         {
-            string statement = "INSERT INTO dbo.PostComments (PostId, Value, SenderUsername, Date) OUTPUT Inserted.Id VALUES (@PostId, @Value, @SenderUsername, @Date)";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "INSERT INTO dbo.PostComments (PostId, Value, SenderUsername, Date) OUTPUT Inserted.Id VALUES ($1, $2, $3, $4)";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             int id = -1;
 
-            command.Parameters.AddWithValue("@PostId", comment.PostId);
-            command.Parameters.AddWithValue("@Value", comment.Value);
-            command.Parameters.AddWithValue("@SenderUsername", comment.SenderUsername);
-            command.Parameters.AddWithValue("@Date", comment.Date);
+            command.Parameters.AddWithValue("$1", comment.PostId);
+            command.Parameters.AddWithValue("$2", comment.Value);
+            command.Parameters.AddWithValue("$3", comment.SenderUsername);
+            command.Parameters.AddWithValue("$4", comment.Date);
 
             try
             {
@@ -139,14 +138,14 @@ namespace TechBlog.Services
 
         public int Update(PostCommentModel comment)
         {
-            string statement = "UPDATE dbo.PostComments SET Value = @Value, Date = @Date OUTPUT Inserted.Id WHERE id = @Id";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "UPDATE dbo.PostComments SET Value = $1, Date = $2 OUTPUT Inserted.Id WHERE id = $3";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             int id = -1;
-           
-            command.Parameters.AddWithValue("@Value", comment.Value);
-            command.Parameters.AddWithValue("@Date", comment.Date);
-            command.Parameters.AddWithValue("@Id", comment.Id);
+            
+            command.Parameters.AddWithValue("$1", comment.Value);
+            command.Parameters.AddWithValue("$2", comment.Date);
+            command.Parameters.AddWithValue("$3", comment.Id);
 
             try
             {
@@ -162,11 +161,11 @@ namespace TechBlog.Services
 
         public int Delete(int id)
         {
-            string statement = "DELETE FROM dbo.PostComments WHERE Id = @Id";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "DELETE FROM dbo.PostComments WHERE Id = $1";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
 
-            command.Parameters.AddWithValue("@Id", id);
+            command.Parameters.AddWithValue("$1", id);
 
             try
             {
@@ -182,11 +181,11 @@ namespace TechBlog.Services
 
         public int DeleteCommentsByPostId(int postId)
         {
-            string statement = "DELETE FROM dbo.PostComments WHERE PostId = @PostId";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "DELETE FROM dbo.PostComments WHERE PostId = $1";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
 
-            command.Parameters.AddWithValue("@PostId", postId);
+            command.Parameters.AddWithValue("$1", postId);
 
             try
             {

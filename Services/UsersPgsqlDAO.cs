@@ -1,88 +1,84 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TechBlog.Models;
+﻿using TechBlog.Models;
+using Npgsql;
+using System;
 using Microsoft.Extensions.Configuration;
 
 namespace TechBlog.Services
 {
-    public class UsersDAO : IUserDataService
+    public class UsersPgsqlDAO : IUserDataService
     {
-        private readonly string connectionString;
-        readonly SecurityService security;
+        private readonly SecurityService security;
+        private readonly string connectionString;       
 
-        public UsersDAO(IConfiguration config, SecurityService security)
+        public UsersPgsqlDAO(IConfiguration config, SecurityService security)
         {
             this.security = security;
-            connectionString = config.GetConnectionString("SqlServerDevelopment");
+            connectionString = config["DATABASE_URL"];
         }
 
         public bool IsUsernameFound(UserModel user)
         {
-            string statement = "SELECT username FROM dbo.Users WHERE username = @username";
-            return SuccessQuery(user, statement);            
+            string statement = "SELECT username FROM dbo.Users WHERE username = $1";
+            return SuccessQuery(user, statement);
         }
 
         public bool IsEmailFound(UserModel user)
         {
-            string statement = "SELECT email FROM dbo.Users WHERE email = @email";
+            string statement = "SELECT email FROM dbo.Users WHERE email = $1";
             return SuccessQuery(user, statement);
-        }        
+        }
 
         public UserModel GetUserByFullCredentials(UserModel user)
         {
-            string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email AND password = @password";
+            string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = $1 AND password = $2";
             string salt = FetchSaltQuery(user);
 
-            if (salt == null) return null;            
+            if (salt == null) return null;
             user.Password = security.HashPassword(user.Password, salt);
             UserModel fetchedUser = FetchUserQuery(user, statement);
             return fetchedUser;
-        }        
+        }
 
         public int InsertUser(UserModel user)
         {
-            string statement = "INSERT INTO dbo.Users (username, email, password, salt) OUTPUT Inserted.Id VALUES (@username, @email, @password, @salt)";
+            string statement = "INSERT INTO dbo.Users (username, email, password, salt) OUTPUT Inserted.Id VALUES ($1, $2, $3, $4)";
             string salt = security.GenerateSalt();
             user.Password = security.HashPassword(user.Password, salt);
-            int id = InsertQuery(user, statement, salt);                       
+            int id = InsertQuery(user, statement, salt);
             return id;
         }
-        
+
         public void InsertUserRole(int id, string roleName)
         {
-            string statement = "SELECT * FROM dbo.Roles WHERE name = @name";
+            string statement = "SELECT * FROM dbo.Roles WHERE name = $1";
             RoleModel role = FetchRoleByNameQuery(roleName, statement);
             InsertUserRoleQuery(id, role.Id);
         }
 
         public string GetRoleByUserId(int id)
-        {            
-            string statement = "SELECT roleId FROM dbo.UserRoles WHERE userId = @id";
+        {
+            string statement = "SELECT roleId FROM dbo.UserRoles WHERE userId = $1";
             int roleId = FetchIdQuery(id, statement);
-            statement = "SELECT * from dbo.Roles WHERE id = @id";
+            statement = "SELECT * from dbo.Roles WHERE id = $1";
             RoleModel role = FetchRoleByIdQuery(roleId, statement);
             return role.Name;
-        }        
+        }
 
         public int InsertQuery(UserModel user, string statement, string salt)
         {
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);            
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             int id = -1;
 
-            command.Parameters.AddWithValue("@username", user.Username);
-            command.Parameters.AddWithValue("@email", user.Email);
-            command.Parameters.AddWithValue("@password", user.Password);
-            command.Parameters.AddWithValue("@salt", salt);
+            command.Parameters.AddWithValue("$1", user.Username);
+            command.Parameters.AddWithValue("$2", user.Email);
+            command.Parameters.AddWithValue("$3", user.Password);
+            command.Parameters.AddWithValue("$4", salt);
 
             try
             {
                 connection.Open();
-                id = (int)command.ExecuteScalar();               
+                id = (int)command.ExecuteScalar();
             }
             catch (Exception exc)
             {
@@ -93,17 +89,17 @@ namespace TechBlog.Services
 
         public void InsertUserRoleQuery(int userId, int roleId)
         {
-            string statement = "INSERT into dbo.UserRoles VALUES (@userId, @roleId)";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "INSERT into dbo.UserRoles VALUES ($1, $2)";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
 
-            command.Parameters.AddWithValue("@userId", userId);
-            command.Parameters.AddWithValue("@roleId", roleId);
+            command.Parameters.AddWithValue("$1", userId);
+            command.Parameters.AddWithValue("$2", roleId);
 
             try
             {
                 connection.Open();
-                command.ExecuteScalar();               
+                command.ExecuteScalar();
             }
             catch (Exception exc)
             {
@@ -114,16 +110,16 @@ namespace TechBlog.Services
         public bool SuccessQuery(UserModel user, string statement)
         {
             bool success = false;
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
 
-            command.Parameters.AddWithValue("@username", user.Username);
-            command.Parameters.AddWithValue("@email", user.Email);
+            command.Parameters.AddWithValue("$1", user.Username);
+            command.Parameters.AddWithValue("$2", user.Email);
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 if (reader.HasRows)
                 {
@@ -140,18 +136,18 @@ namespace TechBlog.Services
 
         public UserModel FetchUserQuery(UserModel user, string statement)
         {
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             UserModel fetchedUser = null;
 
-            command.Parameters.AddWithValue("@username", user.Username);
-            command.Parameters.AddWithValue("@email", user.Email);
-            command.Parameters.AddWithValue("@password", user.Password);
+            command.Parameters.AddWithValue("$1", user.Username);
+            command.Parameters.AddWithValue("$2", user.Email);
+            command.Parameters.AddWithValue("$3", user.Password);
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 if (reader.Read())
                 {
@@ -173,15 +169,15 @@ namespace TechBlog.Services
 
         public int FetchIdQuery(int id, string statement)
         {
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
-            command.Parameters.AddWithValue("@id", id);
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);            
+            command.Parameters.AddWithValue("$1", id);
             int newId = -1;
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 if (reader.Read())
                 {
@@ -197,15 +193,15 @@ namespace TechBlog.Services
 
         public RoleModel FetchRoleByIdQuery(int roleId, string statement)
         {
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
-            command.Parameters.AddWithValue("@id", roleId);
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
+            command.Parameters.AddWithValue("$1", roleId);
             RoleModel role = new();
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 if (reader.Read())
                 {
@@ -225,20 +221,20 @@ namespace TechBlog.Services
 
         public RoleModel FetchRoleByNameQuery(string roleName, string statement)
         {
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
-            command.Parameters.AddWithValue("@name", roleName);
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
+            command.Parameters.AddWithValue("$1", roleName);
             RoleModel role = new();
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 if (reader.Read())
                 {
-                    role = new() 
-                    { 
+                    role = new()
+                    {
                         Id = (int)reader[0],
                         Name = (string)reader[1]
                     };
@@ -253,20 +249,20 @@ namespace TechBlog.Services
 
         public string FetchSaltQuery(UserModel user)
         {
-            string statement = "SELECT salt FROM dbo.Users WHERE username = @username";
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(statement, connection);
+            string statement = "SELECT salt FROM dbo.Users WHERE username = $1";
+            using NpgsqlConnection connection = new(connectionString);
+            NpgsqlCommand command = new(statement, connection);
             string salt = null;
 
-            command.Parameters.AddWithValue("@username", user.Username);
+            command.Parameters.AddWithValue("$1", user.Username);
 
             try
             {
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
 
                 if (reader.Read())
-                {        
+                {
                     salt = (string)reader[0];
                 }
             }

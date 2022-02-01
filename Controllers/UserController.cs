@@ -16,13 +16,13 @@ namespace TechBlog.Controllers
     [Route("/api/users")]
     public class UserController : ControllerBase
     {        
-        readonly UsersDAO repository;
+        readonly IUserDataService repo;
         readonly SecurityService security;
 
-        public UserController()
+        public UserController(IUserDataService repo, SecurityService security)
         {
-            repository = new UsersDAO();
-            security = new SecurityService();
+            this.repo = repo;
+            this.security = security;
         }
 
         [HttpPost]
@@ -37,19 +37,19 @@ namespace TechBlog.Controllers
         {
             try
             {
-                if (repository.IsUsernameFound(user))
+                if (repo.IsUsernameFound(user))
                 {
                     throw new Exception("This username is taken. Please choose a different name.");
                 }
 
-                if (repository.IsEmailFound(user))
+                if (repo.IsEmailFound(user))
                 {             
                     throw new Exception("This email address is already associated with an account. Either use a different email or login if you are the account holder.");
                 }                           
                 
-                int id = repository.InsertUser(user);
-                repository.InsertUserRole(id, "User");
-                string roleName = repository.GetRoleByUserId(id);
+                int id = repo.InsertUser(user);
+                repo.InsertUserRole(id, "User");
+                string roleName = repo.GetRoleByUserId(id);
                 List<Claim> claims = security.AddClaims(user, roleName);
                 SecurityToken token = security.GenerateToken(claims);
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -73,14 +73,14 @@ namespace TechBlog.Controllers
         {
             try
             {
-                UserModel fetchedUser = repository.GetUserByFullCredentials(user);
+                UserModel fetchedUser = repo.GetUserByFullCredentials(user);
 
                 if (fetchedUser == null)
                 {                
                     throw new Exception("Invalid account details. Please try again.");
                 }
 
-                string roleName = repository.GetRoleByUserId(fetchedUser.Id);
+                string roleName = repo.GetRoleByUserId(fetchedUser.Id);
                 List<Claim> claims = security.AddClaims(user, roleName);
                 SecurityToken token = security.GenerateToken(claims);
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(token);

@@ -33,6 +33,7 @@ namespace TechBlog
         {
             var key = Encoding.ASCII.GetBytes(Configuration["JWT_SECRET"]);
 
+            // Add token based authentication services
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -51,9 +52,20 @@ namespace TechBlog
                 };
             });
 
-            // Dependency Injection  
-            services.AddScoped<IPostDataService, PostsDAO>();
-            services.AddScoped<ICommentDataService, PostCommentsDAO>();
+            // Inject data access services
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {                
+                services.AddScoped<IPostDataService, PostsDAO>();
+                services.AddScoped<ICommentDataService, PostCommentsDAO>();
+                services.AddScoped<IUserDataService, UsersDAO>();
+                services.AddScoped<SecurityService, SecurityService>();
+            } else
+            {
+                services.AddScoped<IPostDataService, PostsPgsqlDAO>();
+                services.AddScoped<ICommentDataService, PostCommentsPgsqlDAO>();
+                services.AddScoped<IUserDataService, UsersPgsqlDAO>();
+                services.AddScoped<SecurityService, SecurityService>();
+            }   
 
             services.AddCors();
             services.AddControllers();

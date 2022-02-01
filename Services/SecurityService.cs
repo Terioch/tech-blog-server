@@ -23,10 +23,6 @@ namespace TechBlog.Services
             this.config = config;
         }
 
-        public SecurityService()
-        {
-        }
-
         public string HashPassword(string password, string salt)
         {
             HashAlgorithm algorithm = new SHA256CryptoServiceProvider();
