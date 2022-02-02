@@ -2,21 +2,76 @@
 using Npgsql;
 using System;
 using Microsoft.Extensions.Configuration;
+using TechBlog.Contexts;
+using System.Linq;
 
 namespace TechBlog.Services
 {
-    public class UsersPgsqlDAO : IUserDataService
+    public class SecurityDAO : ISecurityDataService
     {
-        private readonly SecurityService security;
-        private readonly string connectionString;       
+        private readonly TechBlogDbContext context;
+        private readonly SecurityHelper security;
 
-        public UsersPgsqlDAO(IConfiguration config, SecurityService security)
+        public SecurityDAO(TechBlogDbContext context, SecurityHelper security)
         {
+            this.context = context;
             this.security = security;
-            connectionString = config["DATABASE_URL"];
         }
 
         public bool IsUsernameFound(UserModel user)
+        {
+            return context.Users.Any(u => u.Username == user.Username);
+        }
+
+        public bool IsEmailFound(UserModel user)
+        {
+            return context.Users.Any(u => u.Email == user.Email);
+        }
+
+        public bool IsLoginValid(UserModel model)
+        {
+            UserModel user = context.Users.FirstOrDefault(u => u.Username == model.Username && u.Email == model.Email);
+            if (user == null) return false;
+            model.Password = security.HashPassword(model.Password, user.Salt);
+            return model.Password == user.Password;
+        }
+
+        public UserModel GetUserByEmail(string email)
+        {
+            return context.Users.FirstOrDefault(u => u.Email == email);
+        }
+
+        public UserModel InsertUser(UserModel user)
+        {
+            context.Users.Add(user);
+            context.SaveChanges();
+            return user;
+        }
+
+        public UserRoleModel InsertUserRole(UserRoleModel userRole)
+        {
+            context.UserRoles.Add(userRole);
+            context.SaveChanges();
+            return userRole;
+        }
+
+        public RoleModel GetRoleById(int id)
+        {
+            return context.Roles.Find(id);
+        }
+
+        public RoleModel GetRoleByName(string name)
+        {
+            return context.Roles.FirstOrDefault(r => r.Name == name);
+        }
+
+        public RoleModel GetRoleByUserId(int id)
+        {
+            UserRoleModel userRole = context.UserRoles.FirstOrDefault(u => u.UserId == id);
+            return context.Roles.Find(userRole.RoleId);
+        }
+
+        /*public bool IsUsernameFound(UserModel user)
         {
             string statement = "SELECT username FROM dbo.Users WHERE username = $1";
             return SuccessQuery(user, statement);
@@ -271,6 +326,6 @@ namespace TechBlog.Services
                 Console.WriteLine(exc.Message);
             }
             return salt;
-        }
+        }*/
     }
 }

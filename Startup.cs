@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using TechBlog.Services;
+using TechBlog.Utility;
+using TechBlog.Contexts;
+using Microsoft.EntityFrameworkCore;
 
 namespace TechBlog
 {
@@ -27,6 +30,14 @@ namespace TechBlog
         }
 
         public IConfiguration Configuration { get; }
+
+        // Configure the pgsql connection string
+        public string GetPgsqlConnectionString()
+        {
+            string databaseUrl = Configuration["DATABASE_URL"];
+            Uri uri = new Uri(databaseUrl);
+            return $"host={uri.Host};username={uri.UserInfo.Split(':')[0]};password={uri.UserInfo.Split(':')[1]};database={uri.LocalPath.Substring(1)};sslmode=Prefer;Trust Server Certificate=true";            
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -53,19 +64,31 @@ namespace TechBlog
             });
 
             // Inject data access services
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            services.AddDbContext<TechBlogDbContext>(options =>
+                   options.UseNpgsql(GetPgsqlConnectionString()));
+            services.AddScoped<IPostDataService, PostDAO>();
+            services.AddScoped<ICommentDataService, PostCommentDAO>();
+            services.AddScoped<ISecurityDataService, SecurityDAO>();
+            services.AddScoped<SecurityHelper, SecurityHelper>();
+            services.AddScoped<DataAccessHelper, DataAccessHelper>();
+            
+            /*if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
             {                
                 services.AddScoped<IPostDataService, PostsDAO>();
                 services.AddScoped<ICommentDataService, PostCommentsDAO>();
-                services.AddScoped<IUserDataService, UsersDAO>();
-                services.AddScoped<SecurityService, SecurityService>();
+                services.AddScoped<ISecurityDataService, UsersDAO>();
+                services.AddScoped<SecurityHelper, SecurityHelper>();
+                services.AddScoped<PgsqlHelper, PgsqlHelper>();
             } else
             {
+                services.AddDbContext<TechBlogDbContext>(options =>
+                    options.UseNpgsql(GetPgsqlConnectionString()));
                 services.AddScoped<IPostDataService, PostsPgsqlDAO>();
                 services.AddScoped<ICommentDataService, PostCommentsPgsqlDAO>();
-                services.AddScoped<IUserDataService, UsersPgsqlDAO>();
-                services.AddScoped<SecurityService, SecurityService>();
-            }   
+                services.AddScoped<ISecurityDataService, UsersPgsqlDAO>();
+                services.AddScoped<SecurityHelper, SecurityHelper>();
+                services.AddScoped<PgsqlHelper, PgsqlHelper>();
+            }  */
 
             services.AddCors();
             services.AddControllers();

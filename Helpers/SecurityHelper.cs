@@ -14,11 +14,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace TechBlog.Services
 {
-    public class SecurityService
+    public class SecurityHelper
     {
         private readonly IConfiguration config;
 
-        public SecurityService(IConfiguration config)
+        public SecurityHelper(IConfiguration config)
         {
             this.config = config;
         }

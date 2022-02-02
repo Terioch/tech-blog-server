@@ -9,12 +9,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace TechBlog.Services
 {
-    public class UsersDAO : IUserDataService
+    public class UsersDAO
     {
         private readonly string connectionString;
-        readonly SecurityService security;
+        readonly SecurityHelper security;
 
-        public UsersDAO(IConfiguration config, SecurityService security)
+        public UsersDAO(IConfiguration config, SecurityHelper security)
         {
             this.security = security;
             connectionString = config.GetConnectionString("SqlServerDevelopment");

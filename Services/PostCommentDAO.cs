@@ -3,19 +3,67 @@ using Npgsql;
 using System;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using TechBlog.Utility;
+using TechBlog.Contexts;
+using System.Linq;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore;
 
 namespace TechBlog.Services
 {
-    public class PostCommentsPgsqlDAO : ICommentDataService
+    public class PostCommentDAO : ICommentDataService
     {
-        private readonly string connectionString;
+        private readonly TechBlogDbContext context;
 
-        public PostCommentsPgsqlDAO(IConfiguration config)
+        public PostCommentDAO(TechBlogDbContext context)
         {
-            connectionString = config.GetConnectionString("SqlServerDevelopment");
+            this.context = context;
         }
 
-        public List<PostCommentModel> GetAllComments()
+        public IEnumerable<PostCommentModel> GetAllComments()
+        {
+            return context.PostComments;
+        }
+
+        public PostCommentModel GetCommentById(int id)
+        {
+            return context.PostComments.Find(id);
+        }
+
+        public IEnumerable<PostCommentModel> GetCommentsByPostId(int id)
+        {
+            return context.PostComments.Where(c => c.PostId == id);
+        }
+
+        public PostCommentModel Insert(PostCommentModel comment)
+        {
+            context.PostComments.Add(comment);
+            context.SaveChanges();
+            return comment;
+        }
+
+        public PostCommentModel Update(PostCommentModel comment)
+        {
+            EntityEntry<PostCommentModel> attachedComment = context.PostComments.Attach(comment);
+            attachedComment.State = EntityState.Modified;
+            context.SaveChanges();
+            return comment;
+        }
+
+        public PostCommentModel Delete(int id)
+        {
+            PostCommentModel comment = context.PostComments.Find(id);
+            return comment;
+        }
+
+        public IEnumerable<PostCommentModel> DeleteCommentsByPostId(int id)
+        {
+            var comments = context.PostComments.Where(c => c.PostId == id);
+            context.PostComments.RemoveRange(comments);
+            return comments;
+        }        
+
+        /*public List<PostCommentModel> GetAllComments()
         {
             string statement = "SELECT * FROM dbo.PostComments";
             using NpgsqlConnection connection = new(connectionString);
@@ -197,6 +245,6 @@ namespace TechBlog.Services
                 throw new Exception(exc.Message);
             }
             return postId;
-        }
+        }*/
     }
 }

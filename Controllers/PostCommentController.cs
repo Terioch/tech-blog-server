@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TechBlog.Models;
 using TechBlog.Services;
 using System;
+using System.Linq;
 
 namespace TechBlog.Controllers
 {
@@ -22,52 +23,52 @@ namespace TechBlog.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<PostCommentModel>> Get()
         {
-            List<PostCommentModel> comments = repo.GetAllComments();
-            return comments;
+            IEnumerable<PostCommentModel> comments = repo.GetAllComments();
+            return comments.ToList();
         }
    
         [Route("/api/posts/{postId}/comments")]
         [HttpGet]
         public ActionResult<IEnumerable<PostCommentModel>> Get(int postId)
         {
-            List<PostCommentModel> comments = repo.GetCommentsByPostId(postId);
-            return comments;
+            IEnumerable<PostCommentModel> comments = repo.GetCommentsByPostId(postId);
+            return comments.ToList();
         }
 
         [HttpGet("{id}")]
         public ActionResult<PostCommentModel> GetOne(int id)
         {
-            List<PostCommentModel> comments = repo.GetCommentById(id);
-            return comments[0];
+            PostCommentModel comment = repo.GetCommentById(id);
+            return comment;
         }
 
         [HttpPost("[action]")]
-        public ActionResult<int> Create([FromBody] PostCommentModel comment)
+        public ActionResult<PostCommentModel> Create([FromBody] PostCommentModel model)
         {
-            int id = repo.Insert(comment);
-            return id;
+            PostCommentModel comment = repo.Insert(model);
+            return comment;
         }
 
         [HttpPut("[action]")]
-        public ActionResult<int> Update([FromBody] PostCommentModel comment)
+        public ActionResult<PostCommentModel> Update([FromBody] PostCommentModel model)
         {
-            int id = repo.Update(comment);
-            return id;
+            PostCommentModel comment = repo.Update(model);
+            return comment;
         }
 
         [HttpDelete("[action]/{id}")]
-        public ActionResult<int> Delete(int id)
+        public ActionResult<PostCommentModel> Delete(int id)
         {
-            repo.Delete(id);
-            return id;
+            PostCommentModel comment = repo.Delete(id);
+            return comment;
         }
 
         [Route("/api/posts/{postId}/comments/delete")]
         [HttpDelete]
-        public ActionResult<int> DeleteByPostId(int postId)
+        public ActionResult<IEnumerable<PostCommentModel>> DeleteByPostId(int postId)
         {
-            repo.DeleteCommentsByPostId(postId);
-            return postId;
+            IEnumerable<PostCommentModel> comments = repo.DeleteCommentsByPostId(postId);
+            return comments.ToList();
         }
     }
 }

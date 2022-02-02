@@ -25,55 +25,55 @@ namespace TechBlog.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<PostModel>> Get()
         {
-            List<PostModel> posts = repo.GetAllPosts();            
-            return posts;
+            IEnumerable<PostModel> posts = repo.GetAllPosts();            
+            return posts.ToList();
         }
 
         [HttpGet("[action]")]
         [Authorize(Roles = "Admin")]
         public ActionResult<IEnumerable<PostModel>> AdminGet()
         {
-            List<PostModel> posts = repo.GetAllPosts();
-            return posts;
+            IEnumerable<PostModel> posts = repo.GetAllPosts();
+            return posts.ToList();
         }
 
         [HttpGet("{id}")]
         public ActionResult<PostModel> GetOne(int id)
         {
-            List<PostModel> posts = repo.GetPostById(id);
-            return posts[0];            
+            PostModel post = repo.GetPostById(id);
+            return post;            
         }
 
         [HttpGet("adminGetOne/{id}")]
         [Authorize(Roles = "Admin")]
         public ActionResult<PostModel> AdminGetOne(int id)
         {
-            List<PostModel> posts = repo.GetPostById(id);
-            return posts[0];
+            PostModel post = repo.GetPostById(id);
+            return post;
         }
       
         [HttpPost("[action]")]
         [Authorize(Roles = "Admin")]
-        public ActionResult<int> Create([FromBody] PostModel post)
+        public ActionResult<PostModel> Create([FromBody] PostModel model)
         {
-            int postId = repo.Insert(post);            
-            return postId;
+            PostModel post = repo.Insert(model);            
+            return post;
         }
 
         [HttpPut("[action]")]
         [Authorize(Roles = "Admin")]
-        public ActionResult<int> Update([FromBody] PostModel post)
+        public ActionResult<PostModel> Update([FromBody] PostModel model)
         {
-            int postId = repo.Update(post);
-            return postId;
+            PostModel post = repo.Update(model);
+            return post;
         }
 
         [HttpDelete("[action]/{id}")]
-        public ActionResult<int> Delete(int id)
+        public ActionResult<PostModel> Delete(int id)
         {
-            repo.Delete(id);
+            PostModel post = repo.Delete(id);
             commentRepo.DeleteCommentsByPostId(id);
-            return id;
+            return post;
         }
     }
 }

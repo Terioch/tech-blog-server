@@ -7,11 +7,11 @@ using TechBlog.Models;
 
 namespace TechBlog.Services
 {
-    public class PostCommentsDAO : ICommentDataService
+    public class PostCommentSqlDAO
     {
         private readonly string connectionString;
 
-        public PostCommentsDAO(IConfiguration config)
+        public PostCommentSqlDAO(IConfiguration config)
         {
             connectionString = config.GetConnectionString("SqlServerDevelopment");
         }

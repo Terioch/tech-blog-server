@@ -16,10 +16,10 @@ namespace TechBlog.Controllers
     [Route("/api/users")]
     public class UserController : ControllerBase
     {        
-        readonly IUserDataService repo;
-        readonly SecurityService security;
+        readonly ISecurityDataService repo;
+        readonly SecurityHelper security;
 
-        public UserController(IUserDataService repo, SecurityService security)
+        public UserController(ISecurityDataService repo, SecurityHelper security)
         {
             this.repo = repo;
             this.security = security;
@@ -33,30 +33,34 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost("register")]
-        public ActionResult<int> ProcessRegistration([FromBody] UserModel user)
+        public ActionResult<int> ProcessRegistration([FromBody] UserModel model)
         {
             try
             {
-                if (repo.IsUsernameFound(user))
+                if (repo.IsUsernameFound(model))
                 {
                     throw new Exception("This username is taken. Please choose a different name.");
                 }
 
-                if (repo.IsEmailFound(user))
+                if (repo.IsEmailFound(model))
                 {             
                     throw new Exception("This email address is already associated with an account. Either use a different email or login if you are the account holder.");
                 }                           
                 
-                int id = repo.InsertUser(user);
-                repo.InsertUserRole(id, "User");
-                string roleName = repo.GetRoleByUserId(id);
-                List<Claim> claims = security.AddClaims(user, roleName);
+                // TODO: Configure such that admin credentials are assigned the admin role and all other credentials are assigned the user role
+                UserModel user = repo.InsertUser(model);
+                // repo.InsertUserRole(user.Id, "User"); 
+                RoleModel role = repo.GetRoleByName("User");
+                UserRoleModel userRole = new() { UserId = user.Id, RoleId = role.Id };
+                repo.InsertUserRole(userRole);
+                // RoleModel role = repo.GetRoleByUserId(user.Id);
+                List<Claim> claims = security.AddClaims(user, role.Name);
                 SecurityToken token = security.GenerateToken(claims);
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
                 return Ok(new 
                 { 
-                    Id = id, 
+                    Id = user.Id, 
                     Token = tokenString, 
                     Expires = token.ValidTo 
                 });
@@ -69,25 +73,24 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost("login")]
-        public ActionResult<int> ProcessLogin([FromBody] UserModel user)
+        public ActionResult<int> ProcessLogin([FromBody] UserModel model)
         {
             try
             {
-                UserModel fetchedUser = repo.GetUserByFullCredentials(user);
-
-                if (fetchedUser == null)
+                if (!repo.IsLoginValid(model))
                 {                
                     throw new Exception("Invalid account details. Please try again.");
                 }
 
-                string roleName = repo.GetRoleByUserId(fetchedUser.Id);
-                List<Claim> claims = security.AddClaims(user, roleName);
+                UserModel user = repo.GetUserByEmail(model.Email);
+                RoleModel role = repo.GetRoleByUserId(user.Id);
+                List<Claim> claims = security.AddClaims(user, role.Name);
                 SecurityToken token = security.GenerateToken(claims);
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
                 return Ok(new
                 {
-                    Id = fetchedUser.Id,
+                    Id = user.Id,
                     Token = tokenString,
                     Expires = token.ValidTo
                 });

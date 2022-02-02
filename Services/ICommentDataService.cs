@@ -5,12 +5,12 @@ namespace TechBlog.Services
 {
     public interface ICommentDataService
     {
-        public List<PostCommentModel> GetAllComments();
-        public List<PostCommentModel> GetCommentsByPostId(int postId);
-        public List<PostCommentModel> GetCommentById(int id);
-        public int Insert(PostCommentModel comment);
-        public int Update(PostCommentModel comment);
-        public int Delete(int id);
-        public int DeleteCommentsByPostId(int postId);
+        public IEnumerable<PostCommentModel> GetAllComments();
+        public IEnumerable<PostCommentModel> GetCommentsByPostId(int id);
+        public PostCommentModel GetCommentById(int id);
+        public PostCommentModel Insert(PostCommentModel comment);
+        public PostCommentModel Update(PostCommentModel comment);
+        public PostCommentModel Delete(int id);
+        public IEnumerable<PostCommentModel> DeleteCommentsByPostId(int id);
     }
 }

@@ -8,10 +8,10 @@ namespace TechBlog.Services
 {
     public interface IPostDataService
     {
-        public List<PostModel> GetAllPosts();
-        public List<PostModel> GetPostById(int Id);
-        public int Insert(PostModel post);
-        public int Update(PostModel post);
-        public int Delete(int Id);
+        public IEnumerable<PostModel> GetAllPosts();
+        public PostModel GetPostById(int Id);
+        public PostModel Insert(PostModel post);
+        public PostModel Update(PostModel post);
+        public PostModel Delete(int Id);
     }
 }
