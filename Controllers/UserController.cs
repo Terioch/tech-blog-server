@@ -47,12 +47,10 @@ namespace TechBlog.Controllers
                     throw new Exception("This email address is already associated with an account. Either use a different email or login if you are the account holder.");
                 }
 
-                RoleModel role = repo.GetRoleByName(security.FindRoleForUser(model));
-                UserModel user = repo.InsertUser(model);
-                // repo.InsertUserRole(user.Id, "User");                 
+                RoleModel role = repo.GetRoleByName("User");
+                UserModel user = repo.InsertUser(model);                               
                 UserRoleModel userRole = new() { UserId = user.Id, RoleId = role.Id };
-                repo.InsertUserRole(userRole);
-                // RoleModel role = repo.GetRoleByUserId(user.Id);
+                repo.InsertUserRole(userRole);              
                 List<Claim> claims = security.AddClaims(user, role.Name);
                 SecurityToken token = security.GenerateToken(claims);
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
