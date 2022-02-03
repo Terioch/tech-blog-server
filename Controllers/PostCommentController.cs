@@ -32,7 +32,7 @@ namespace TechBlog.Controllers
         public ActionResult<IEnumerable<PostCommentModel>> Get(int postId)
         {
             IEnumerable<PostCommentModel> comments = repo.GetCommentsByPostId(postId);
-            return comments.ToList();
+            return comments.OrderByDescending(c => c.Date).ToList();
         }
 
         [HttpGet("{id}")]

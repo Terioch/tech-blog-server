@@ -21,12 +21,12 @@ namespace TechBlog.Controllers
             this.repo = repo;
             this.commentRepo = commentRepo;
         }
-
+       
         [HttpGet]
         public ActionResult<IEnumerable<PostModel>> Get()
         {
             IEnumerable<PostModel> posts = repo.GetAllPosts();            
-            return posts.ToList();
+            return posts.OrderByDescending(p => p.Date).ToList();
         }
 
         [HttpGet("[action]")]
@@ -34,7 +34,7 @@ namespace TechBlog.Controllers
         public ActionResult<IEnumerable<PostModel>> AdminGet()
         {
             IEnumerable<PostModel> posts = repo.GetAllPosts();
-            return posts.ToList();
+            return posts.OrderByDescending(p => p.Date).ToList();
         }
 
         [HttpGet("{id}")]

@@ -61,7 +61,20 @@ namespace TechBlog
                     ValidateIssuer = false,
                     ValidateAudience = false
                 };
-            });
+            });            
+
+            /*if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
+            {
+                string connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+                services.AddDbContext<TechBlogDbContext>(options =>
+                    options.UseSqlServer(connectionString));
+            }
+            else
+            {
+                string connectionString = GetPgsqlConnectionString();
+                services.AddDbContext<TechBlogDbContext>(options =>
+                   options.UseNpgsql(connectionString));               
+            }*/
 
             // Inject data access services
             services.AddDbContext<TechBlogDbContext>(options =>
@@ -71,24 +84,6 @@ namespace TechBlog
             services.AddScoped<ISecurityDataService, SecurityDAO>();
             services.AddScoped<SecurityHelper, SecurityHelper>();
             services.AddScoped<DataAccessHelper, DataAccessHelper>();
-            
-            /*if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
-            {                
-                services.AddScoped<IPostDataService, PostsDAO>();
-                services.AddScoped<ICommentDataService, PostCommentsDAO>();
-                services.AddScoped<ISecurityDataService, UsersDAO>();
-                services.AddScoped<SecurityHelper, SecurityHelper>();
-                services.AddScoped<PgsqlHelper, PgsqlHelper>();
-            } else
-            {
-                services.AddDbContext<TechBlogDbContext>(options =>
-                    options.UseNpgsql(GetPgsqlConnectionString()));
-                services.AddScoped<IPostDataService, PostsPgsqlDAO>();
-                services.AddScoped<ICommentDataService, PostCommentsPgsqlDAO>();
-                services.AddScoped<ISecurityDataService, UsersPgsqlDAO>();
-                services.AddScoped<SecurityHelper, SecurityHelper>();
-                services.AddScoped<PgsqlHelper, PgsqlHelper>();
-            }  */
 
             services.AddCors();
             services.AddControllers();
