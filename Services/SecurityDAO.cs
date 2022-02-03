@@ -43,6 +43,8 @@ namespace TechBlog.Services
 
         public UserModel InsertUser(UserModel user)
         {
+            user.Salt = security.GenerateSalt();
+            user.Password = security.HashPassword(user.Password, user.Salt);
             context.Users.Add(user);
             context.SaveChanges();
             return user;

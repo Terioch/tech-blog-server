@@ -45,12 +45,11 @@ namespace TechBlog.Controllers
                 if (repo.IsEmailFound(model))
                 {             
                     throw new Exception("This email address is already associated with an account. Either use a different email or login if you are the account holder.");
-                }                           
-                
-                // TODO: Configure such that admin credentials are assigned the admin role and all other credentials are assigned the user role
+                }
+
+                RoleModel role = repo.GetRoleByName(security.FindRoleForUser(model));
                 UserModel user = repo.InsertUser(model);
-                // repo.InsertUserRole(user.Id, "User"); 
-                RoleModel role = repo.GetRoleByName("User");
+                // repo.InsertUserRole(user.Id, "User");                 
                 UserRoleModel userRole = new() { UserId = user.Id, RoleId = role.Id };
                 repo.InsertUserRole(userRole);
                 // RoleModel role = repo.GetRoleByUserId(user.Id);

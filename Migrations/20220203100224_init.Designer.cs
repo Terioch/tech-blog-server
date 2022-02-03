@@ -10,8 +10,8 @@ using TechBlog.Contexts;
 namespace TechBlog.Migrations
 {
     [DbContext(typeof(TechBlogDbContext))]
-    [Migration("20220202174641_userChanges")]
-    partial class userChanges
+    [Migration("20220203100224_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -119,8 +119,7 @@ namespace TechBlog.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Salt")
                         .HasColumnType("text");

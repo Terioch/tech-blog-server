@@ -21,7 +21,6 @@ namespace TechBlog.Models
 
         [Required]
         [DataType(DataType.Password)]
-        [StringLength(40, MinimumLength = 8)]
         public string Password { get; set; }
 
         public string Salt { get; set; }

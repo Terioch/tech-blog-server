@@ -40,15 +40,7 @@ namespace TechBlog.Services
             rng.GetBytes(buffer);
             string salt = Convert.ToBase64String(buffer);
             return salt;
-        }
-
-        public List<Claim> AddClaims(UserModel user, string roleName)
-        {
-            List<Claim> claims = new();
-            claims.Add(new Claim(ClaimTypes.Name, user.Email));
-            claims.Add(new(ClaimTypes.Role, roleName));
-            return claims;
-        }
+        }        
 
         // Create a JWT token for authorizing a user
         public SecurityToken GenerateToken(List<Claim> claims)
@@ -62,6 +54,27 @@ namespace TechBlog.Services
             };
             var token = new JwtSecurityTokenHandler().CreateToken(tokenDescriptor);                  
             return token;
+        }
+
+        public List<Claim> AddClaims(UserModel user, string roleName)
+        {
+            List<Claim> claims = new();
+            claims.Add(new Claim(ClaimTypes.Name, user.Email));
+            claims.Add(new(ClaimTypes.Role, roleName));
+            return claims;
+        }
+
+        public string FindRoleForUser(UserModel user)
+        {
+            bool isUsernameMatch = user.Username == config["SuperAdminCredentials:Username"];
+            bool isEmailMatch = user.Email == config["SuperAdminCredentials:Email"];
+            bool isPasswordMatch = user.Password == config["SuperAdminCredentials:Password"];
+
+            if (isUsernameMatch && isEmailMatch && isPasswordMatch)
+            {
+                return "Admin";
+            }
+            return "User";
         }
     }
 }

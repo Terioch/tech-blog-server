@@ -117,8 +117,7 @@ namespace TechBlog.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Salt")
                         .HasColumnType("text");
