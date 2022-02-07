@@ -14,12 +14,12 @@ namespace TechBlog.Controllers
 {
     [ApiController]
     [Route("/api/users")]
-    public class UserController : ControllerBase
+    public class SecurityController : ControllerBase
     {        
         readonly ISecurityDataService repo;
         readonly SecurityHelper security;
 
-        public UserController(ISecurityDataService repo, SecurityHelper security)
+        public SecurityController(ISecurityDataService repo, SecurityHelper security)
         {
             this.repo = repo;
             this.security = security;
@@ -33,7 +33,7 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost("register")]
-        public ActionResult<int> ProcessRegistration([FromBody] UserModel model)
+        public ActionResult ProcessRegistration([FromBody] UserModel model)
         {
             try
             {
@@ -58,6 +58,7 @@ namespace TechBlog.Controllers
                 return Ok(new 
                 { 
                     Id = user.Id, 
+                    Role = role.Name,
                     Token = tokenString, 
                     Expires = token.ValidTo 
                 });
@@ -70,7 +71,7 @@ namespace TechBlog.Controllers
         }
 
         [HttpPost("login")]
-        public ActionResult<int> ProcessLogin([FromBody] UserModel model)
+        public ActionResult ProcessLogin([FromBody] UserModel model)
         {
             try
             {
@@ -88,6 +89,7 @@ namespace TechBlog.Controllers
                 return Ok(new
                 {
                     Id = user.Id,
+                    Role = role.Name,
                     Token = tokenString,
                     Expires = token.ValidTo
                 });
