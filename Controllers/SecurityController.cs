@@ -96,6 +96,7 @@ namespace TechBlog.Controllers
             }
             catch (Exception exc)
             {
+                Console.WriteLine(exc.Message);
                 return Unauthorized(exc.Message);
             }
         }
