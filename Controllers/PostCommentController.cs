@@ -28,6 +28,7 @@ namespace TechBlog.Controllers
         }
    
         [Route("/api/posts/{postId}/comments")]
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<PostCommentModel>> Get(int postId)
         {

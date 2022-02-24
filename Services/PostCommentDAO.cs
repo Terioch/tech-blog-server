@@ -53,6 +53,8 @@ namespace TechBlog.Services
         public PostCommentModel Delete(int id)
         {
             PostCommentModel comment = context.PostComments.Find(id);
+            context.PostComments.Remove(comment);
+            context.SaveChanges();
             return comment;
         }
 
