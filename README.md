@@ -4,7 +4,7 @@ An Asp.Net Web API service for a Technology Blog website using RESTful architect
 
 ## General Information
 
-This project served as my introduction to Asp.Net Web API and handles requests for the following:
+This project served as my introduction to Asp.Net Web API and processes data in JSON format for the following requests:
 
 * Blog posts
 * Post comments
