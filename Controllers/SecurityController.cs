@@ -34,7 +34,7 @@ namespace TechBlog.Controllers
 
         [HttpPost("register")]
         public ActionResult ProcessRegistration([FromBody] UserModel model)
-        {
+        {            
             try
             {
                 if (repo.IsUsernameFound(model))

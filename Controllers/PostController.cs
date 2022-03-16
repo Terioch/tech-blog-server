@@ -11,6 +11,7 @@ namespace TechBlog.Controllers
 {
     [ApiController]  
     [Route("/api/posts")]
+    [Authorize(Roles = "Admin")]
     public class PostController : ControllerBase
     {  
         private readonly IPostDataService repo;
@@ -23,45 +24,43 @@ namespace TechBlog.Controllers
         }
        
         [HttpGet]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<PostModel>> Get()
         {
             IEnumerable<PostModel> posts = repo.GetAllPosts();            
             return posts.OrderByDescending(p => p.Date).ToList();
         }
 
-        [HttpGet("[action]")]
-        [Authorize(Roles = "Admin")]
+        [HttpGet("[action]")]        
         public ActionResult<IEnumerable<PostModel>> AdminGet()
         {
             IEnumerable<PostModel> posts = repo.GetAllPosts();
             return posts.OrderByDescending(p => p.Date).ToList();
         }
-
-        [HttpGet("{id}")]
+        
+        [HttpGet("{id}")]        
+        [AllowAnonymous]
         public ActionResult<PostModel> GetOne(int id)
         {
             PostModel post = repo.GetPostById(id);
             return post;            
         }
 
-        [HttpGet("adminGetOne/{id}")]
-        [Authorize(Roles = "Admin")]
+        [HttpGet("adminGetOne/{id}")]        
         public ActionResult<PostModel> AdminGetOne(int id)
         {
             PostModel post = repo.GetPostById(id);
             return post;
         }
       
-        [HttpPost("[action]")]
-        [Authorize(Roles = "Admin")]
+        [HttpPost("[action]")]        
         public ActionResult<PostModel> Create([FromBody] PostModel model)
         {
             PostModel post = repo.Insert(model);            
             return post;
         }
 
-        [HttpPut("[action]")]
-        [Authorize(Roles = "Admin")]
+        [HttpPut("[action]")]        
         public ActionResult<PostModel> Update([FromBody] PostModel model)
         {
             PostModel post = repo.Update(model);
