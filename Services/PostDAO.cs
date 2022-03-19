@@ -19,34 +19,34 @@ namespace TechBlog.Services
             this.context = context;
         }
 
-        public IEnumerable<PostModel> GetAllPosts()
+        public IEnumerable<Post> GetAllPosts()
         {
             return context.Posts;
         }              
 
-        public PostModel GetPostById(int id)
+        public Post GetPostById(int id)
         {
             return context.Posts.Find(id);
         }
 
-        public PostModel Insert(PostModel post)
+        public Post Insert(Post post)
         {
             context.Posts.Add(post);
             context.SaveChanges();
             return post;
         }
 
-        public PostModel Update(PostModel post)
+        public Post Update(Post post)
         {
-            EntityEntry<PostModel> attachedPost = context.Posts.Attach(post);
+            EntityEntry<Post> attachedPost = context.Posts.Attach(post);
             attachedPost.State = EntityState.Modified;
             context.SaveChanges();
             return post;
         }
 
-        public PostModel Delete(int id)
+        public Post Delete(int id)
         {
-            PostModel post = context.Posts.Find(id);
+            Post post = context.Posts.Find(id);
             context.Posts.Remove(post);
             context.SaveChanges();
             return post;

@@ -20,30 +20,30 @@ namespace TechBlog.Services
             connectionString = config.GetConnectionString("SqlServerDevelopment");
         }
 
-        public bool IsUsernameFound(UserModel user)
+        public bool IsUsernameFound(User user)
         {
             string statement = "SELECT username FROM dbo.Users WHERE username = @username";
             return SuccessQuery(user, statement);            
         }
 
-        public bool IsEmailFound(UserModel user)
+        public bool IsEmailFound(User user)
         {
             string statement = "SELECT email FROM dbo.Users WHERE email = @email";
             return SuccessQuery(user, statement);
         }        
 
-        public UserModel GetUserByFullCredentials(UserModel user)
+        public User GetUserByFullCredentials(User user)
         {
             string statement = "SELECT * FROM dbo.Users WHERE username = @username AND email = @email AND password = @password";
             string salt = FetchSaltQuery(user);
 
             if (salt == null) return null;            
             user.Password = security.HashPassword(user.Password, salt);
-            UserModel fetchedUser = FetchUserQuery(user, statement);
+            User fetchedUser = FetchUserQuery(user, statement);
             return fetchedUser;
         }        
 
-        public int InsertUser(UserModel user)
+        public int InsertUser(User user)
         {
             string statement = "INSERT INTO dbo.Users (username, email, password, salt) OUTPUT Inserted.Id VALUES (@username, @email, @password, @salt)";
             string salt = security.GenerateSalt();
@@ -55,7 +55,7 @@ namespace TechBlog.Services
         public void InsertUserRole(int id, string roleName)
         {
             string statement = "SELECT * FROM dbo.Roles WHERE name = @name";
-            RoleModel role = FetchRoleByNameQuery(roleName, statement);
+            Role role = FetchRoleByNameQuery(roleName, statement);
             InsertUserRoleQuery(id, role.Id);
         }
 
@@ -64,11 +64,11 @@ namespace TechBlog.Services
             string statement = "SELECT roleId FROM dbo.UserRoles WHERE userId = @id";
             int roleId = FetchIdQuery(id, statement);
             statement = "SELECT * from dbo.Roles WHERE id = @id";
-            RoleModel role = FetchRoleByIdQuery(roleId, statement);
+            Role role = FetchRoleByIdQuery(roleId, statement);
             return role.Name;
         }        
 
-        public int InsertQuery(UserModel user, string statement, string salt)
+        public int InsertQuery(User user, string statement, string salt)
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);            
@@ -111,7 +111,7 @@ namespace TechBlog.Services
             }
         }
 
-        public bool SuccessQuery(UserModel user, string statement)
+        public bool SuccessQuery(User user, string statement)
         {
             bool success = false;
             using SqlConnection connection = new(connectionString);
@@ -138,11 +138,11 @@ namespace TechBlog.Services
         }
 
 
-        public UserModel FetchUserQuery(UserModel user, string statement)
+        public User FetchUserQuery(User user, string statement)
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            UserModel fetchedUser = null;
+            User fetchedUser = null;
 
             command.Parameters.AddWithValue("@username", user.Username);
             command.Parameters.AddWithValue("@email", user.Email);
@@ -155,7 +155,7 @@ namespace TechBlog.Services
 
                 if (reader.Read())
                 {
-                    fetchedUser = new UserModel
+                    fetchedUser = new User
                     {
                         Id = (int)reader[0],
                         Username = (string)reader[1],
@@ -195,12 +195,12 @@ namespace TechBlog.Services
             return newId;
         }
 
-        public RoleModel FetchRoleByIdQuery(int roleId, string statement)
+        public Role FetchRoleByIdQuery(int roleId, string statement)
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
             command.Parameters.AddWithValue("@id", roleId);
-            RoleModel role = new();
+            Role role = new();
 
             try
             {
@@ -223,12 +223,12 @@ namespace TechBlog.Services
             return role;
         }
 
-        public RoleModel FetchRoleByNameQuery(string roleName, string statement)
+        public Role FetchRoleByNameQuery(string roleName, string statement)
         {
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
             command.Parameters.AddWithValue("@name", roleName);
-            RoleModel role = new();
+            Role role = new();
 
             try
             {
@@ -251,7 +251,7 @@ namespace TechBlog.Services
             return role;
         }
 
-        public string FetchSaltQuery(UserModel user)
+        public string FetchSaltQuery(User user)
         {
             string statement = "SELECT salt FROM dbo.Users WHERE username = @username";
             using SqlConnection connection = new(connectionString);

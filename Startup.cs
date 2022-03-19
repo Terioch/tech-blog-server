@@ -43,6 +43,15 @@ namespace TechBlog
         public void ConfigureServices(IServiceCollection services)
         {
             var key = Encoding.ASCII.GetBytes(Configuration["JWT_SECRET"]);
+            var tokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            services.AddSingleton(tokenValidationParameters);
 
             // Add token based authentication services
             services.AddAuthentication(x =>
@@ -54,13 +63,7 @@ namespace TechBlog
             {                
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = true;
-                x.TokenValidationParameters = new()
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
+                x.TokenValidationParameters = tokenValidationParameters;
             });            
 
             /*if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")

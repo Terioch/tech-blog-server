@@ -5,7 +5,7 @@ using TechBlog.Models;
 
 namespace TechBlog.Models
 {
-    public class PostModel
+    public class Post
     {
         public int Id { get; set; }
 
@@ -28,6 +28,6 @@ namespace TechBlog.Models
         [Required]
         public string Content { get; set; }
 
-        public virtual ICollection<PostCommentModel> Comments { get; set; } = new HashSet<PostCommentModel>();
+        public virtual ICollection<PostComment> Comments { get; set; } = new HashSet<PostComment>();
     }
 }

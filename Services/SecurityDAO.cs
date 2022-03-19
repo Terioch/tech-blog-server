@@ -18,30 +18,35 @@ namespace TechBlog.Services
             this.security = security;
         }
 
-        public bool IsUsernameFound(UserModel user)
+        public bool IsUsernameFound(User user)
         {
             return context.Users.Any(u => u.Username == user.Username);
         }
 
-        public bool IsEmailFound(UserModel user)
+        public bool IsEmailFound(User user)
         {
             return context.Users.Any(u => u.Email == user.Email);
         }
 
-        public bool IsLoginValid(UserModel model)
+        public bool IsLoginValid(User model)
         {
-            UserModel user = context.Users.FirstOrDefault(u => u.Username == model.Username && u.Email == model.Email);
+            User user = context.Users.FirstOrDefault(u => u.Username == model.Username && u.Email == model.Email);
             if (user == null) return false;
             model.Password = security.HashPassword(model.Password, user.Salt);
             return model.Password == user.Password;
         }
 
-        public UserModel GetUserByEmail(string email)
+        public User GetUserById(int id)
+        {
+            return context.Users.Find(id);
+        }
+
+        public User GetUserByEmail(string email)
         {
             return context.Users.FirstOrDefault(u => u.Email == email);
         }
 
-        public UserModel InsertUser(UserModel user)
+        public User InsertUser(User user)
         {
             user.Salt = security.GenerateSalt();
             user.Password = security.HashPassword(user.Password, user.Salt);
@@ -50,26 +55,26 @@ namespace TechBlog.Services
             return user;
         }
 
-        public UserRoleModel InsertUserRole(UserRoleModel userRole)
+        public UserRole InsertUserRole(UserRole userRole)
         {
             context.UserRoles.Add(userRole);
             context.SaveChanges();
             return userRole;
-        }
+        }        
 
-        public RoleModel GetRoleById(int id)
+        public Role GetRoleById(int id)
         {
             return context.Roles.Find(id);
         }
 
-        public RoleModel GetRoleByName(string name)
+        public Role GetRoleByName(string name)
         {
             return context.Roles.FirstOrDefault(r => r.Name == name);
         }
 
-        public RoleModel GetRoleByUserId(int id)
+        public Role GetRoleByUserId(int id)
         {
-            UserRoleModel userRole = context.UserRoles.FirstOrDefault(u => u.UserId == id);
+            UserRole userRole = context.UserRoles.FirstOrDefault(u => u.UserId == id);
             return context.Roles.Find(userRole.RoleId);
         }
 

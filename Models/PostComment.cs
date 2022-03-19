@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TechBlog.Models
 {
-    public class PostCommentModel
+    public class PostComment
     {        
         public int Id { get; set; }
 

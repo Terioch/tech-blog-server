@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TechBlog.Models
 {
-    public class UserRoleModel
+    public class UserRole
     {
         [Key]
         public int UserId { get; set; }

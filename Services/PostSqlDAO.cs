@@ -17,12 +17,12 @@ namespace TechBlog.Services
             connectionString = config.GetConnectionString("SqlServerDevelopment");
         }
 
-        public IEnumerable<PostModel> GetAllPosts()
+        public IEnumerable<Post> GetAllPosts()
         {
             string statement = "SELECT * FROM dbo.Posts";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            List<PostModel> posts = new();
+            List<Post> posts = new();
 
             try
             {
@@ -31,7 +31,7 @@ namespace TechBlog.Services
 
                 while (reader.Read())
                 {
-                    posts.Add(new PostModel
+                    posts.Add(new Post
                     {
                         Id = (int)reader[0],
                         Title = (string)reader[1],
@@ -49,12 +49,12 @@ namespace TechBlog.Services
             return posts;
         }
 
-        public PostModel GetPostById(int Id)
+        public Post GetPostById(int Id)
         {
             string statement = "SELECT * FROM dbo.Posts WHERE id = @Id";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            List<PostModel> posts = new();
+            List<Post> posts = new();
 
             command.Parameters.AddWithValue("@Id", Id);
 
@@ -65,7 +65,7 @@ namespace TechBlog.Services
 
                 while (reader.Read())
                 {
-                    posts.Add(new PostModel
+                    posts.Add(new Post
                     {
                         Id = (int)reader[0],
                         Title = (string)reader[1],
@@ -84,7 +84,7 @@ namespace TechBlog.Services
             return posts[0];
         }
 
-        public int Insert(PostModel post)
+        public int Insert(Post post)
         {
             string statement = "INSERT INTO dbo.Posts (title, date, author, imgSrc, excerpt, content) OUTPUT Inserted.Id VALUES (@Title, @Date, @Author, @ImgSrc, @Excerpt, @Content)";
             using SqlConnection connection = new(connectionString);
@@ -109,7 +109,7 @@ namespace TechBlog.Services
             return id;
         }
 
-        public int Update(PostModel post)
+        public int Update(Post post)
         {
             string statement = "UPDATE dbo.Posts SET title = @Title, date = @Date, author = @Author, imgSrc = @ImgSrc, excerpt = @Excerpt, content = @Content OUTPUT Inserted.Id WHERE id = @Id";
             using SqlConnection connection = new(connectionString);

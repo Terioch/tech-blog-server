@@ -16,12 +16,12 @@ namespace TechBlog.Services
             connectionString = config.GetConnectionString("SqlServerDevelopment");
         }
 
-        public List<PostCommentModel> GetAllComments()
+        public List<PostComment> GetAllComments()
         {
             string statement = "SELECT * FROM dbo.PostComments";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            List<PostCommentModel> comments = new();
+            List<PostComment> comments = new();
 
             try
             {
@@ -47,12 +47,12 @@ namespace TechBlog.Services
             return comments;
         }
 
-        public List<PostCommentModel> GetCommentsByPostId(int postId)
+        public List<PostComment> GetCommentsByPostId(int postId)
         {
             string statement = "SELECT * FROM dbo.PostComments WHERE PostId = @PostId";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            List<PostCommentModel> comments = new();
+            List<PostComment> comments = new();
 
             command.Parameters.AddWithValue("@PostId", postId);
 
@@ -80,12 +80,12 @@ namespace TechBlog.Services
             return comments;
         }
 
-        public List<PostCommentModel> GetCommentById(int Id)
+        public List<PostComment> GetCommentById(int Id)
         {
             string statement = "SELECT * FROM dbo.PostComments WHERE id = @Id";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
-            List<PostCommentModel> comments = new();
+            List<PostComment> comments = new();
 
             command.Parameters.AddWithValue("@Id", Id);
 
@@ -113,7 +113,7 @@ namespace TechBlog.Services
             return comments;
         }
 
-        public int Insert(PostCommentModel comment)
+        public int Insert(PostComment comment)
         {
             string statement = "INSERT INTO dbo.PostComments (PostId, Value, SenderUsername, Date) OUTPUT Inserted.Id VALUES (@PostId, @Value, @SenderUsername, @Date)";
             using SqlConnection connection = new(connectionString);
@@ -137,7 +137,7 @@ namespace TechBlog.Services
             return id;
         }
 
-        public int Update(PostCommentModel comment)
+        public int Update(PostComment comment)
         {
             string statement = "UPDATE dbo.PostComments SET Value = @Value, Date = @Date OUTPUT Inserted.Id WHERE id = @Id";
             using SqlConnection connection = new(connectionString);

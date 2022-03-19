@@ -2,7 +2,7 @@
 
 namespace TechBlog.Models
 {
-    public class RoleModel
+    public class Role
     {
         public int Id { get; set; }
 

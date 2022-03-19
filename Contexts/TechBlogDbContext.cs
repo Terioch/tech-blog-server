@@ -9,14 +9,16 @@ namespace TechBlog.Contexts
         {
         }
 
-        public DbSet<RoleModel> Roles { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
-        public DbSet<UserModel> Users { get; set; }
+        public DbSet<User> Users { get; set; }
 
-        public DbSet<UserRoleModel> UserRoles { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
 
-        public DbSet<PostModel> Posts { get; set; }
+        public DbSet<Post> Posts { get; set; }
 
-        public DbSet<PostCommentModel> PostComments { get; set; }
+        public DbSet<PostComment> PostComments { get; set; }
+
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

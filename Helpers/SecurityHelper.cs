@@ -11,16 +11,24 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using TechBlog.Contexts;
 
 namespace TechBlog.Services
 {
     public class SecurityHelper
     {
         private readonly IConfiguration config;
+        private readonly ISecurityDataService security;
+        private readonly TokenValidationParameters tokenValidationParameters;
+        private readonly TechBlogDbContext context;
 
-        public SecurityHelper(IConfiguration config)
+        public SecurityHelper(IConfiguration config, ISecurityDataService security, 
+            TokenValidationParameters tokenValidationParameters, TechBlogDbContext context)
         {
             this.config = config;
+            this.security = security;
+            this.tokenValidationParameters = tokenValidationParameters;
+            this.context = context;
         }
 
         public string HashPassword(string password, string salt)
@@ -42,29 +50,106 @@ namespace TechBlog.Services
             return salt;
         }        
 
-        // Create a JWT token for authorizing a user
-        public SecurityToken GenerateToken(List<Claim> claims)
+        // Generate a JWT token for authorizing a user
+        public SecurityToken GenerateAccessToken(List<Claim> claims)
         {         
             var key = Encoding.ASCII.GetBytes(config["JWT_SECRET"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(100),
+                Expires = DateTime.UtcNow.AddMinutes(1),
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = new JwtSecurityTokenHandler().CreateToken(tokenDescriptor);                  
             return token;
         }
 
-        public List<Claim> AddClaims(UserModel user, string roleName)
+        public RefreshToken GenerateRefreshToken(int userId)
+        {
+            var refreshToken = new RefreshToken()
+            {
+                UserId = userId,
+                Token = GenerateRefreshToken(),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(3)
+            };
+
+            context.RefreshTokens.Add(refreshToken);
+            context.SaveChanges();
+            return refreshToken;
+        }
+
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        public AuthenticatedResult ProcessTokenRefresh(string token, string refreshToken)
+        {
+            var validatedToken = GetPrincipalFromToken(token);
+
+            var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
+
+            var storedRefreshToken = context.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken);
+
+            if (validatedToken == null || storedRefreshToken == null
+                || DateTime.Now > storedRefreshToken.ExpiresAt)
+            {
+                // Return error
+            }
+            
+            context.RefreshTokens.Update(storedRefreshToken);
+
+            var user = security.GetUserById(int.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.NameId).Value));
+            var accessToken = GenerateAccessToken(validatedToken.Claims.ToList());
+
+            return new AuthenticatedResult()
+            {
+                Id = user.Id,
+                Role = security.GetRoleByUserId(user.Id).Name,
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
+                RefreshToken = GenerateRefreshToken()
+            };
+        }
+
+        private static bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
+        {
+            return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
+                jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256Signature, 
+                    StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        private ClaimsPrincipal GetPrincipalFromToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
+                if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
+                {
+                    return null;
+                }
+                return principal;
+            } 
+            catch
+            {
+                return null;
+            }
+        }
+
+        public List<Claim> AddTokenClaims(User user, string roleName)
         {
             List<Claim> claims = new();
             claims.Add(new Claim(ClaimTypes.Name, user.Email));
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));           
             claims.Add(new(ClaimTypes.Role, roleName));
             return claims;
         }
 
-        public string FindRoleForUser(UserModel user)
+        public string FindRoleForUser(User user)
         {
             bool isUsernameMatch = user.Username == config["SuperAdminCredentials:Username"];
             bool isEmailMatch = user.Email == config["SuperAdminCredentials:Email"];
@@ -75,6 +160,6 @@ namespace TechBlog.Services
                 return "Admin";
             }
             return "User";
-        }
+        }      
     }
 }

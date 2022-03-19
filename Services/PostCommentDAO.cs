@@ -20,45 +20,45 @@ namespace TechBlog.Services
             this.context = context;
         }
 
-        public IEnumerable<PostCommentModel> GetAllComments()
+        public IEnumerable<PostComment> GetAllComments()
         {
             return context.PostComments;
         }
 
-        public PostCommentModel GetCommentById(int id)
+        public PostComment GetCommentById(int id)
         {
             return context.PostComments.Find(id);
         }
 
-        public IEnumerable<PostCommentModel> GetCommentsByPostId(int id)
+        public IEnumerable<PostComment> GetCommentsByPostId(int id)
         {
             return context.PostComments.Where(c => c.PostId == id);
         }
 
-        public PostCommentModel Insert(PostCommentModel comment)
+        public PostComment Insert(PostComment comment)
         {
             context.PostComments.Add(comment);
             context.SaveChanges();
             return comment;
         }
 
-        public PostCommentModel Update(PostCommentModel comment)
+        public PostComment Update(PostComment comment)
         {
-            EntityEntry<PostCommentModel> attachedComment = context.PostComments.Attach(comment);
+            EntityEntry<PostComment> attachedComment = context.PostComments.Attach(comment);
             attachedComment.State = EntityState.Modified;
             context.SaveChanges();
             return comment;
         }
 
-        public PostCommentModel Delete(int id)
+        public PostComment Delete(int id)
         {
-            PostCommentModel comment = context.PostComments.Find(id);
+            PostComment comment = context.PostComments.Find(id);
             context.PostComments.Remove(comment);
             context.SaveChanges();
             return comment;
         }
 
-        public IEnumerable<PostCommentModel> DeleteCommentsByPostId(int id)
+        public IEnumerable<PostComment> DeleteCommentsByPostId(int id)
         {
             var comments = context.PostComments.Where(c => c.PostId == id);
             context.PostComments.RemoveRange(comments);

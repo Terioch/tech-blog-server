@@ -4,14 +4,15 @@ namespace TechBlog.Services
 {
     public interface ISecurityDataService
     {
-        public bool IsUsernameFound(UserModel user);        
-        public bool IsEmailFound(UserModel user);        
-        public bool IsLoginValid(UserModel model);
-        public UserModel GetUserByEmail(string email);
-        public UserModel InsertUser(UserModel user);       
-        public UserRoleModel InsertUserRole(UserRoleModel userRole);
-        public RoleModel GetRoleById(int id);
-        public RoleModel GetRoleByName(string name);
-        public RoleModel GetRoleByUserId(int id);       
+        public bool IsUsernameFound(User user);        
+        public bool IsEmailFound(User user);        
+        public bool IsLoginValid(User model);
+        public User GetUserById(int id);
+        public User GetUserByEmail(string email);
+        public User InsertUser(User user);       
+        public UserRole InsertUserRole(UserRole userRole);
+        public Role GetRoleById(int id);
+        public Role GetRoleByName(string name);
+        public Role GetRoleByUserId(int id);       
     }
 }
