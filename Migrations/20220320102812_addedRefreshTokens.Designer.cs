@@ -10,8 +10,8 @@ using TechBlog.Contexts;
 namespace TechBlog.Migrations
 {
     [DbContext(typeof(TechBlogDbContext))]
-    [Migration("20220319150630_addedRefreshTokens")]
-    partial class addedRefreshTokens
+    [Migration("20220320102812_addedRefreshTokens")]
+    partial class AddedRefreshTokens
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,40 +21,7 @@ namespace TechBlog.Migrations
                 .HasAnnotation("ProductVersion", "5.0.13")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-            modelBuilder.Entity("TechBlog.Models.PostCommentModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<long>("Date")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PostModelId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SenderUsername")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("character varying(400)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostModelId");
-
-                    b.ToTable("PostComments");
-                });
-
-            modelBuilder.Entity("TechBlog.Models.PostModel", b =>
+            modelBuilder.Entity("TechBlog.Models.Post", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -90,7 +57,37 @@ namespace TechBlog.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("TechBlog.Models.RefreshTokenModel", b =>
+            modelBuilder.Entity("TechBlog.Models.PostComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<long>("Date")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SenderUsername")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostComments");
+                });
+
+            modelBuilder.Entity("TechBlog.Models.RefreshToken", b =>
                 {
                     b.Property<string>("Token")
                         .HasColumnType("text");
@@ -98,32 +95,20 @@ namespace TechBlog.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("ExpiryDate")
+                    b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<bool>("Invalidated")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("JwtId")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Used")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("UserId1")
+                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Token");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("TechBlog.Models.RoleModel", b =>
+            modelBuilder.Entity("TechBlog.Models.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -139,7 +124,7 @@ namespace TechBlog.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("TechBlog.Models.UserModel", b =>
+            modelBuilder.Entity("TechBlog.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -168,7 +153,7 @@ namespace TechBlog.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("TechBlog.Models.UserRoleModel", b =>
+            modelBuilder.Entity("TechBlog.Models.UserRole", b =>
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
@@ -183,23 +168,27 @@ namespace TechBlog.Migrations
                     b.ToTable("UserRoles");
                 });
 
-            modelBuilder.Entity("TechBlog.Models.PostCommentModel", b =>
+            modelBuilder.Entity("TechBlog.Models.PostComment", b =>
                 {
-                    b.HasOne("TechBlog.Models.PostModel", null)
+                    b.HasOne("TechBlog.Models.Post", null)
                         .WithMany("Comments")
-                        .HasForeignKey("PostModelId");
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("TechBlog.Models.RefreshTokenModel", b =>
+            modelBuilder.Entity("TechBlog.Models.RefreshToken", b =>
                 {
-                    b.HasOne("TechBlog.Models.UserModel", "User")
+                    b.HasOne("TechBlog.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TechBlog.Models.PostModel", b =>
+            modelBuilder.Entity("TechBlog.Models.Post", b =>
                 {
                     b.Navigation("Comments");
                 });

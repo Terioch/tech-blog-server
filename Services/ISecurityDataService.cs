@@ -5,8 +5,7 @@ namespace TechBlog.Services
     public interface ISecurityDataService
     {
         public bool IsUsernameFound(User user);        
-        public bool IsEmailFound(User user);        
-        public bool IsLoginValid(User model);
+        public bool IsEmailFound(User user);       
         public User GetUserById(int id);
         public User GetUserByEmail(string email);
         public User InsertUser(User user);       

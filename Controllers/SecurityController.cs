@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using TechBlog.Contexts;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace TechBlog.Controllers
 {
@@ -60,28 +61,34 @@ namespace TechBlog.Controllers
             }
 
             Role role = repo.GetRoleByName("User");
-            User user = repo.InsertUser(model);                               
+            User user = security.RegisterUser(model);
             UserRole userRole = new() { UserId = user.Id, RoleId = role.Id };
             repo.InsertUserRole(userRole);              
             List<Claim> claims = security.AddTokenClaims(user, role.Name);
-            SecurityToken token = security.GenerateAccessToken(claims);            
-            string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            SecurityToken accessToken = security.GenerateAccessToken(claims);            
+            string accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
             RefreshToken refreshToken = security.GenerateRefreshToken(user.Id);
+            HttpContext.Response.Cookies.Append("access_token", accessTokenString, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
 
             return Ok(new AuthenticatedResult
             {
                 Id = user.Id,
                 Role = role.Name,
-                AccessToken = tokenString,
+                AccessToken = accessTokenString,
                 RefreshToken = refreshToken.Token,
-                ExpiresAt = token.ValidTo
+                Expires = accessToken.ValidTo
             });
         }
 
         [HttpPost("login")]
         public ActionResult ProcessLogin([FromBody] User model)
-        {            
-            if (!repo.IsLoginValid(model))
+        {                        
+            if (!security.IsLoginValid(model))
             {
                 return Unauthorized(new UserException(
                     new UserError
@@ -97,6 +104,12 @@ namespace TechBlog.Controllers
             SecurityToken accessToken = security.GenerateAccessToken(claims);            
             string accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
             RefreshToken refreshToken = security.GenerateRefreshToken(user.Id);
+            HttpContext.Response.Cookies.Append("access_token", accessTokenString, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
 
             return Ok(new AuthenticatedResult
             {
@@ -104,12 +117,12 @@ namespace TechBlog.Controllers
                 Role = role.Name,
                 AccessToken = accessTokenString,
                 RefreshToken = refreshToken.Token,
-                ExpiresAt = accessToken.ValidTo
+                Expires = accessToken.ValidTo
             });                                      
         }
 
-        [HttpGet("refreshToken")]
-        public async Task<IActionResult> ProcessRefresh([FromBody] RefreshToken refreshToken)
+        [HttpPost("refreshToken")]
+        public IActionResult ProcessRefresh([FromBody] RefreshToken refreshToken)
         {
             try
             {
@@ -118,8 +131,16 @@ namespace TechBlog.Controllers
                     return Unauthorized();
                 }
 
-                var accessToken = await HttpContext.GetTokenAsync("Bearer", "access_token");
+                // var accessToken = await HttpContext.GetTokenAsync("Bearer", "access_token");                
+                var accessToken = HttpContext.Request.Cookies["access_token"];
+                // if (!string.IsNullOrEmpty(accessToken)) HttpContext.Request.Headers.Add("Authorization", "Bearer " + accessToken);
                 AuthenticatedResult result = security.ProcessTokenRefresh(accessToken, refreshToken.Token);
+                HttpContext.Response.Cookies.Append("access_token", result.AccessToken, new CookieOptions 
+                { 
+                    HttpOnly = true, 
+                    Secure = true,
+                    SameSite = SameSiteMode.None
+                });
                 return Ok(result);
             }
             catch (Exception exc)

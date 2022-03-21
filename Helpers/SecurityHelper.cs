@@ -31,6 +31,21 @@ namespace TechBlog.Services
             this.context = context;
         }
 
+        public User RegisterUser(User model)
+        {
+            model.Salt = GenerateSalt();
+            model.Password = HashPassword(model.Password, model.Salt);
+            return security.InsertUser(model);
+        }
+
+        public bool IsLoginValid(User model)
+        {
+            User user = context.Users.FirstOrDefault(u => u.Username == model.Username && u.Email == model.Email);
+            if (user == null) return false;
+            model.Password = HashPassword(model.Password, user.Salt);
+            return model.Password == user.Password;
+        }        
+
         public string HashPassword(string password, string salt)
         {
             HashAlgorithm algorithm = new SHA256CryptoServiceProvider();
@@ -57,7 +72,7 @@ namespace TechBlog.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(1),
+                Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = new JwtSecurityTokenHandler().CreateToken(tokenDescriptor);                  
@@ -70,7 +85,8 @@ namespace TechBlog.Services
             {
                 UserId = userId,
                 Token = GenerateRefreshToken(),
-                ExpiresAt = DateTime.UtcNow.AddMinutes(3)
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
             };
 
             context.RefreshTokens.Add(refreshToken);
@@ -86,39 +102,38 @@ namespace TechBlog.Services
             return Convert.ToBase64String(randomNumber);
         }
 
-        public AuthenticatedResult ProcessTokenRefresh(string token, string refreshToken)
+        public AuthenticatedResult ProcessTokenRefresh(string accessToken, string refreshToken)
         {
-            var validatedToken = GetPrincipalFromToken(token);
-
-            var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
-
+            var principal = GetPrincipalFromToken(accessToken);   
             var storedRefreshToken = context.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken);
 
-            if (validatedToken == null || storedRefreshToken == null
+            if (principal == null || storedRefreshToken == null
                 || DateTime.Now > storedRefreshToken.ExpiresAt)
             {
-                // Return error
+                throw new SecurityTokenException("Invalid Token");
             }
             
             context.RefreshTokens.Update(storedRefreshToken);
 
-            var user = security.GetUserById(int.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.NameId).Value));
-            var accessToken = GenerateAccessToken(validatedToken.Claims.ToList());
+            var user = security.GetUserById(int.Parse(principal.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value));
+            var newAccessToken = GenerateAccessToken(principal.Claims.ToList()); 
 
             return new AuthenticatedResult()
             {
                 Id = user.Id,
                 Role = security.GetRoleByUserId(user.Id).Name,
-                AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
-                RefreshToken = GenerateRefreshToken()
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+                RefreshToken = GenerateRefreshToken(),
+                Expires = newAccessToken.ValidTo
             };
         }
 
-        private static bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
+        private static bool IsJwtWithValidSecurityAlgorithm(JwtSecurityToken validatedToken)
         {
-            return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
-                jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256Signature, 
-                    StringComparison.InvariantCultureIgnoreCase);
+            /* return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
+                 jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256Signature, 
+                     StringComparison.InvariantCultureIgnoreCase);*/
+            return validatedToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256);
         }
 
         private ClaimsPrincipal GetPrincipalFromToken(string token)
@@ -126,9 +141,9 @@ namespace TechBlog.Services
             var tokenHandler = new JwtSecurityTokenHandler();
 
             try
-            {
+            { 
                 var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
-                if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
+                if (!IsJwtWithValidSecurityAlgorithm(validatedToken as JwtSecurityToken)) 
                 {
                     return null;
                 }

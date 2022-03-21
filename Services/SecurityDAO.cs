@@ -10,12 +10,10 @@ namespace TechBlog.Services
     public class SecurityDAO : ISecurityDataService
     {
         private readonly TechBlogDbContext context;
-        private readonly SecurityHelper security;
 
-        public SecurityDAO(TechBlogDbContext context, SecurityHelper security)
+        public SecurityDAO(TechBlogDbContext context)
         {
             this.context = context;
-            this.security = security;
         }
 
         public bool IsUsernameFound(User user)
@@ -26,15 +24,7 @@ namespace TechBlog.Services
         public bool IsEmailFound(User user)
         {
             return context.Users.Any(u => u.Email == user.Email);
-        }
-
-        public bool IsLoginValid(User model)
-        {
-            User user = context.Users.FirstOrDefault(u => u.Username == model.Username && u.Email == model.Email);
-            if (user == null) return false;
-            model.Password = security.HashPassword(model.Password, user.Salt);
-            return model.Password == user.Password;
-        }
+        }        
 
         public User GetUserById(int id)
         {
@@ -47,9 +37,7 @@ namespace TechBlog.Services
         }
 
         public User InsertUser(User user)
-        {
-            user.Salt = security.GenerateSalt();
-            user.Password = security.HashPassword(user.Password, user.Salt);
+        {            
             context.Users.Add(user);
             context.SaveChanges();
             return user;
