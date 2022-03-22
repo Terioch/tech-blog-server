@@ -28,17 +28,10 @@ namespace TechBlog.Controllers
             this.context = context;
             this.repo = repo;
             this.security = security;
-        }
+        }        
 
-        [HttpPost]
-        [Authorize]
-        public ActionResult<string> IsAuthenticated()
-        {
-            return "User is authenticated";
-        }
-
-        [HttpPost("register")]
-        public ActionResult ProcessRegistration([FromBody] User model)
+        [HttpPost("[action]")]
+        public ActionResult Register([FromBody] User model)
         {                                  
             if (repo.IsUsernameFound(model))
             {                
@@ -85,8 +78,8 @@ namespace TechBlog.Controllers
             });
         }
 
-        [HttpPost("login")]
-        public ActionResult ProcessLogin([FromBody] User model)
+        [HttpPost("[action]")]
+        public ActionResult Login([FromBody] User model)
         {                        
             if (!security.IsLoginValid(model))
             {
@@ -121,8 +114,8 @@ namespace TechBlog.Controllers
             });                                      
         }
 
-        [HttpPost("refreshToken")]
-        public IActionResult ProcessRefresh([FromBody] RefreshToken refreshToken)
+        [HttpPost("[action]")]
+        public IActionResult Refresh([FromBody] RefreshToken refreshToken)
         {
             try
             {
@@ -145,16 +138,21 @@ namespace TechBlog.Controllers
             }
             catch (Exception exc)
             {
-                return Unauthorized(exc.Message);                
+                return Unauthorized(new UserException(
+                    new UserError
+                    {
+                        General = new string[] { exc.Message }
+                    }, 401)
+                );
             }
         }
 
-        [HttpPost("logout")]
-        [Authorize]
-        public ActionResult Logout(int userId)
+        [HttpPost("[action]/{id}")]
+        public ActionResult Logout(int id)
         {            
-            var refreshToken = context.RefreshTokens.SingleOrDefault(t => t.UserId == userId);
-            context.RefreshTokens.Remove(refreshToken);
+            var refreshTokens = context.RefreshTokens.Where(t => t.UserId == id);
+            context.RefreshTokens.RemoveRange(refreshTokens);
+            context.SaveChanges();
             return Ok();
         }
     }

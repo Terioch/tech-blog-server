@@ -113,7 +113,7 @@ namespace TechBlog.Services
                 throw new SecurityTokenException("Invalid Token");
             }
             
-            context.RefreshTokens.Update(storedRefreshToken);
+            // context.RefreshTokens.Update(storedRefreshToken);
 
             var user = security.GetUserById(int.Parse(principal.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value));
             var newAccessToken = GenerateAccessToken(principal.Claims.ToList()); 
@@ -123,7 +123,7 @@ namespace TechBlog.Services
                 Id = user.Id,
                 Role = security.GetRoleByUserId(user.Id).Name,
                 AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
-                RefreshToken = GenerateRefreshToken(),
+                RefreshToken = GenerateRefreshToken(user.Id).Token,
                 Expires = newAccessToken.ValidTo
             };
         }
