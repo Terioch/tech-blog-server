@@ -72,7 +72,7 @@ namespace TechBlog.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(15),
+                Expires = DateTime.UtcNow.AddMinutes(1),
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = new JwtSecurityTokenHandler().CreateToken(tokenDescriptor);                  
@@ -86,7 +86,7 @@ namespace TechBlog.Services
                 UserId = userId,
                 Token = GenerateRefreshToken(),
                 CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(5000)
             };
 
             context.RefreshTokens.Add(refreshToken);
@@ -139,9 +139,10 @@ namespace TechBlog.Services
         private ClaimsPrincipal GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
+            tokenValidationParameters.ValidateLifetime = false; // An expired token should not be invalidated
 
             try
-            { 
+            {                
                 var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
                 if (!IsJwtWithValidSecurityAlgorithm(validatedToken as JwtSecurityToken)) 
                 {
