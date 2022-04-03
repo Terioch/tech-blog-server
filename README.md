@@ -1,6 +1,6 @@
-﻿# Tech Blog Server
+﻿# Techtrace API
 
-An Asp.Net Web API service for a Technology Blog website using RESTful architecture.
+An ASP.NET Web API service for a technology blog site using RESTful architecture.
 
 ## General Information
 
@@ -11,4 +11,4 @@ This project served as my introduction to Asp.Net Web API and processes data in 
 * User login
 * User registration
 
-This service also implements authentication with JWT, claims-based authorization and data access using entity framework.
+This service also implements authentication with JWT and refresh token functionality, claims-based authorization and Entity Framework data-access.
