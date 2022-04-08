@@ -27,14 +27,14 @@ namespace TechBlog.Controllers
         [AllowAnonymous]
         public ActionResult<IEnumerable<Post>> Get()
         {
-            IEnumerable<Post> posts = repo.GetAllPosts();            
+            var posts = repo.GetAllPosts().Take(15);            
             return posts.OrderByDescending(p => p.Date).ToList();
         }
 
         [HttpGet("[action]")]        
         public ActionResult<IEnumerable<Post>> AdminGet()
         {
-            IEnumerable<Post> posts = repo.GetAllPosts();
+            var posts = repo.GetAllPosts();
             return posts.OrderByDescending(p => p.Date).ToList();
         }
         
@@ -46,12 +46,29 @@ namespace TechBlog.Controllers
             return post;            
         }
 
-        [HttpGet("adminGetOne/{id}")]        
+        [HttpGet("[action]/{id}")]        
         public ActionResult<Post> AdminGetOne(int id)
         {
             Post post = repo.GetPostById(id);
             return post;
         }
+
+        [HttpGet("search/{searchTerm}")]
+        [AllowAnonymous]
+        public ActionResult<IEnumerable<Post>> FilterPostsByTitle(string searchTerm = null)
+        {
+            var posts = repo.GetAllPosts();
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return Array.Empty<Post>();
+            }
+
+            return posts
+                .Where(p => p.Title.ToLowerInvariant().Contains(searchTerm))
+                .OrderByDescending(p => p.Date)
+                .ToList();
+        }        
       
         [HttpPost("[action]")]        
         public ActionResult<Post> Create([FromBody] Post model)
