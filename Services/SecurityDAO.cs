@@ -36,6 +36,11 @@ namespace TechBlog.Services
             return context.Users.FirstOrDefault(u => u.Email == email);
         }
 
+        public User GetUserByUsername(string username)
+        {
+            return context.Users.FirstOrDefault(u => u.Username == username);
+        }
+
         public User InsertUser(User user)
         {            
             context.Users.Add(user);

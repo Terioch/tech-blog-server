@@ -34,9 +34,9 @@ namespace TechBlog.Services
                     posts.Add(new Post
                     {
                         Id = (int)reader[0],
-                        Title = (string)reader[1],
-                        Date = (long)reader[2],
-                        Author = (string)reader[3],
+                        AuthorId = (int)reader[1],
+                        Title = (string)reader[2],
+                        Date = (long)reader[3],                 
                         ImgSrc = (string)(reader[4]),
                         Excerpt = (string)reader[5],
                         Content = (string)reader[6],
@@ -68,9 +68,9 @@ namespace TechBlog.Services
                     posts.Add(new Post
                     {
                         Id = (int)reader[0],
-                        Title = (string)reader[1],
-                        Date = (long)reader[2],
-                        Author = (string)reader[3],
+                        AuthorId = (int)reader[1],
+                        Title = (string)reader[2],
+                        Date = (long)reader[3],                       
                         ImgSrc = (string)(reader[4]),
                         Excerpt = (string)reader[5],
                         Content = (string)reader[6],
@@ -86,14 +86,14 @@ namespace TechBlog.Services
 
         public int Insert(Post post)
         {
-            string statement = "INSERT INTO dbo.Posts (title, date, author, imgSrc, excerpt, content) OUTPUT Inserted.Id VALUES (@Title, @Date, @Author, @ImgSrc, @Excerpt, @Content)";
+            string statement = "INSERT INTO dbo.Posts (title, date, authorId, imgSrc, excerpt, content) OUTPUT Inserted.Id VALUES (@Title, @Date, @AuthorId, @ImgSrc, @Excerpt, @Content)";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
             int id = -1;
 
             command.Parameters.AddWithValue("@Title", post.Title);
             command.Parameters.AddWithValue("@Date", post.Date);
-            command.Parameters.AddWithValue("@Author", post.Author);
+            command.Parameters.AddWithValue("@AuthorId", post.AuthorId);
             command.Parameters.AddWithValue("@ImgSrc", post.ImgSrc);
             command.Parameters.AddWithValue("@Excerpt", post.Excerpt);
             command.Parameters.AddWithValue("@Content", post.Content);   
@@ -111,14 +111,14 @@ namespace TechBlog.Services
 
         public int Update(Post post)
         {
-            string statement = "UPDATE dbo.Posts SET title = @Title, date = @Date, author = @Author, imgSrc = @ImgSrc, excerpt = @Excerpt, content = @Content OUTPUT Inserted.Id WHERE id = @Id";
+            string statement = "UPDATE dbo.Posts SET title = @Title, date = @Date, authorId = @AuthorId, imgSrc = @ImgSrc, excerpt = @Excerpt, content = @Content OUTPUT Inserted.Id WHERE id = @Id";
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(statement, connection);
             int id = -1;
             
             command.Parameters.AddWithValue("@Title", post.Title);
             command.Parameters.AddWithValue("@Date", post.Date);
-            command.Parameters.AddWithValue("@Author", post.Author);
+            command.Parameters.AddWithValue("@AuthorId", post.AuthorId);
             command.Parameters.AddWithValue("@ImgSrc", post.ImgSrc);
             command.Parameters.AddWithValue("@Excerpt", post.Excerpt);
             command.Parameters.AddWithValue("@Content", post.Content);

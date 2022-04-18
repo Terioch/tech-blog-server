@@ -10,7 +10,7 @@ namespace TechBlog.Models
     {
         public int Id { get; set; }
 
-        [Required]
+        [Required]        
         [ForeignKey(nameof(Author))]
         public int AuthorId { get; set; }
 

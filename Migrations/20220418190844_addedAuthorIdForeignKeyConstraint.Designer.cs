@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TechBlog.Contexts;
@@ -9,9 +10,10 @@ using TechBlog.Contexts;
 namespace TechBlog.Migrations
 {
     [DbContext(typeof(TechBlogDbContext))]
-    partial class TechBlogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220418190844_addedAuthorIdForeignKeyConstraint")]
+    partial class addedAuthorIdForeignKeyConstraint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

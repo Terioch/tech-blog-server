@@ -8,6 +8,7 @@ namespace TechBlog.Services
         public bool IsEmailFound(User user);       
         public User GetUserById(int id);
         public User GetUserByEmail(string email);
+        public User GetUserByUsername(string username);
         public User InsertUser(User user);       
         public UserRole InsertUserRole(UserRole userRole);
         public Role GetRoleById(int id);

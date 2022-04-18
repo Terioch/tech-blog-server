@@ -17,13 +17,29 @@ namespace TechBlog.Controllers
         private readonly IPostDataService repo;
         private readonly ICommentDataService commentRepo;
         private readonly ISlugService slugService;
+        private readonly ISecurityDataService securityRepo;
 
-        public PostController(IPostDataService repo, ICommentDataService commentRepo, ISlugService slugService)
+        public PostController(IPostDataService repo, ICommentDataService commentRepo, ISlugService slugService, ISecurityDataService securityRepo)
         {
             this.repo = repo;
             this.commentRepo = commentRepo;
             this.slugService = slugService;
+            this.securityRepo = securityRepo;
         }
+
+        /*[HttpGet("[action]")]
+        [AllowAnonymous]
+        public ActionResult<IEnumerable<Post>> RunTempUpdates()
+        {
+            var posts = repo.GetAllPosts().ToList();
+            for (int i = 0; i < posts.Count; i++)
+            {
+                posts[i].AuthorId = securityRepo.GetUserByUsername(posts[i].Author).Id;
+                posts[i].Slug = slugService.Slugify(posts[i].Title);
+                repo.Update(posts[i]);
+            }
+            return posts.ToList();
+        }*/
        
         [HttpGet]
         [AllowAnonymous]
@@ -83,7 +99,31 @@ namespace TechBlog.Controllers
         [HttpPut("[action]")]        
         public ActionResult<Post> Update([FromBody] Post model)
         {
-            Post post = repo.Update(model);
+            Post post = repo.GetPostById(model.Id);
+             
+            post.Excerpt = model.Excerpt;
+            // post.AuthorId = model.AuthorId;
+            post.Author = model.Author;
+            post.Content = model.Content;
+            post.ImgSrc = model.ImgSrc;
+
+            string newSlug = slugService.Slugify(post.Title);
+
+            // Verify whether title is unique based on slug
+            if (post.Slug != newSlug)
+            {
+                if (slugService.IsUnique(newSlug))
+                {
+                    post.Title = model.Title;
+                    post.Slug = newSlug;
+                } 
+                else
+                {
+                    return BadRequest("Cannot create a post with a duplicate title");
+                }
+            }
+
+            repo.Update(post);
             return post;
         }
 
