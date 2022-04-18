@@ -16,11 +16,13 @@ namespace TechBlog.Controllers
     {  
         private readonly IPostDataService repo;
         private readonly ICommentDataService commentRepo;
+        private readonly ISlugService slugService;
 
-        public PostController(IPostDataService repo, ICommentDataService commentRepo)
+        public PostController(IPostDataService repo, ICommentDataService commentRepo, ISlugService slugService)
         {
             this.repo = repo;
             this.commentRepo = commentRepo;
+            this.slugService = slugService;
         }
        
         [HttpGet]
@@ -73,7 +75,8 @@ namespace TechBlog.Controllers
         [HttpPost("[action]")]        
         public ActionResult<Post> Create([FromBody] Post model)
         {
-            Post post = repo.Insert(model);            
+            model.Slug = slugService.Slugify(model.Title);
+            Post post = repo.Insert(model);               
             return post;
         }
 

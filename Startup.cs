@@ -99,6 +99,7 @@ namespace TechBlog
             services.AddScoped<IPostDataService, PostDAO>();
             services.AddScoped<ICommentDataService, PostCommentDAO>();
             services.AddScoped<ISecurityDataService, SecurityDAO>();
+            services.AddScoped<ISlugService, BasicSlugService>();
             services.AddScoped<SecurityHelper, SecurityHelper>();
             services.AddScoped<DataAccessHelper, DataAccessHelper>();
 
