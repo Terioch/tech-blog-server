@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using TechBlog.ViewModels;
 
 namespace TechBlog.Controllers
 {
@@ -58,16 +59,16 @@ namespace TechBlog.Controllers
         
         [HttpGet("{id}")]        
         [AllowAnonymous]
-        public ActionResult<Post> GetOne(int id)
+        public async Task<ActionResult<Post>> GetOne(int id)
         {
-            Post post = repo.GetPostById(id);
+            Post post = await repo.GetPostById(id);
             return post;            
         }
 
         [HttpGet("[action]/{id}")]        
-        public ActionResult<Post> AdminGetOne(int id)
+        public async Task<ActionResult<Post>> AdminGetOne(int id)
         {
-            Post post = repo.GetPostById(id);
+            Post post = await repo.GetPostById(id);
             return post;
         }
 
@@ -89,25 +90,42 @@ namespace TechBlog.Controllers
         }        
       
         [HttpPost("[action]")]        
-        public ActionResult<Post> Create([FromBody] Post model)
+        public ActionResult<Post> Create([FromBody] CreatePostViewModel model)
         {
-            model.Slug = slugService.Slugify(model.Title);
-            Post post = repo.Insert(model);               
-            return post;
+            Post post = new()
+            {
+                AuthorId = model.AuthorId,
+                Title = model.Title,
+                Slug = slugService.Slugify(model.Title),
+                Date = model.Date,
+                ImgSrc = model.ImgSrc,
+                Excerpt = model.Excerpt,
+                Content = model.Content
+            };            
+
+            // Verify whether title is unique based on slug            
+            if (slugService.IsUnique(post.Slug))
+            {
+                Post newPost = repo.Insert(post);
+                return newPost;
+            }
+            else
+            {
+                return BadRequest("Cannot create a post with a duplicate title");
+            }            
         }
 
         [HttpPut("[action]")]        
-        public ActionResult<Post> Update([FromBody] Post model)
+        public async Task<ActionResult<Post>> Update([FromBody] Post model)
         {
-            Post post = repo.GetPostById(model.Id);
-             
-            post.Excerpt = model.Excerpt;
-            // post.AuthorId = model.AuthorId;
-            post.Author = model.Author;
+            Post post = await repo.GetPostById(model.Id);
+
+            post.AuthorId = model.AuthorId;
+            post.Excerpt = model.Excerpt;            
             post.Content = model.Content;
             post.ImgSrc = model.ImgSrc;
 
-            string newSlug = slugService.Slugify(post.Title);
+            string newSlug = slugService.Slugify(model.Title);
 
             // Verify whether title is unique based on slug
             if (post.Slug != newSlug)

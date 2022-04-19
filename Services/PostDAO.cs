@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TechBlog.Contexts;
+using System.Threading.Tasks;
 
 namespace TechBlog.Services
 {
@@ -24,9 +25,9 @@ namespace TechBlog.Services
             return context.Posts;
         }              
 
-        public Post GetPostById(int id)
+        public async Task<Post> GetPostById(int id)
         {
-            return context.Posts.Find(id);
+            return await context.Posts.Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public Post Insert(Post post)
