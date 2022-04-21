@@ -26,21 +26,7 @@ namespace TechBlog.Controllers
             this.commentRepo = commentRepo;
             this.slugService = slugService;
             this.securityRepo = securityRepo;
-        }
-
-        /*[HttpGet("[action]")]
-        [AllowAnonymous]
-        public ActionResult<IEnumerable<Post>> RunTempUpdates()
-        {
-            var posts = repo.GetAllPosts().ToList();
-            for (int i = 0; i < posts.Count; i++)
-            {
-                posts[i].AuthorId = securityRepo.GetUserByUsername(posts[i].Author).Id;
-                posts[i].Slug = slugService.Slugify(posts[i].Title);
-                repo.Update(posts[i]);
-            }
-            return posts.ToList();
-        }*/
+        }        
        
         [HttpGet]
         [AllowAnonymous]
