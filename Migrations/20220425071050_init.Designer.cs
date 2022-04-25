@@ -10,8 +10,8 @@ using TechBlog.Contexts;
 namespace TechBlog.Migrations
 {
     [DbContext(typeof(TechBlogDbContext))]
-    [Migration("20220320102812_addedRefreshTokens")]
-    partial class AddedRefreshTokens
+    [Migration("20220425071050_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,10 +28,8 @@ namespace TechBlog.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -48,11 +46,17 @@ namespace TechBlog.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
 
                     b.ToTable("Posts");
                 });
@@ -166,6 +170,17 @@ namespace TechBlog.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("TechBlog.Models.Post", b =>
+                {
+                    b.HasOne("TechBlog.Models.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
                 });
 
             modelBuilder.Entity("TechBlog.Models.PostComment", b =>
