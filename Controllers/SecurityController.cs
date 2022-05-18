@@ -56,11 +56,14 @@ namespace TechBlog.Controllers
             Role role = repo.GetRoleByName("User");
             User user = security.RegisterUser(model);
             UserRole userRole = new() { UserId = user.Id, RoleId = role.Id };
+
             repo.InsertUserRole(userRole);              
+
             List<Claim> claims = security.AddTokenClaims(user, role.Name);
             SecurityToken accessToken = security.GenerateAccessToken(claims);            
             string accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
             RefreshToken refreshToken = security.GenerateRefreshToken(user.Id);
+
             HttpContext.Response.Cookies.Append("access_token", accessTokenString, new CookieOptions
             {
                 HttpOnly = true,
@@ -97,6 +100,7 @@ namespace TechBlog.Controllers
             SecurityToken accessToken = security.GenerateAccessToken(claims);            
             string accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
             RefreshToken refreshToken = security.GenerateRefreshToken(user.Id);
+
             HttpContext.Response.Cookies.Append("access_token", accessTokenString, new CookieOptions
             {
                 HttpOnly = true,
@@ -128,12 +132,14 @@ namespace TechBlog.Controllers
                 var accessToken = HttpContext.Request.Cookies["access_token"];
                 // if (!string.IsNullOrEmpty(accessToken)) HttpContext.Request.Headers.Add("Authorization", "Bearer " + accessToken);
                 AuthenticatedResult result = security.ProcessTokenRefresh(accessToken, refreshToken.Token);
+
                 HttpContext.Response.Cookies.Append("access_token", result.AccessToken, new CookieOptions 
                 { 
                     HttpOnly = true, 
                     Secure = true,
                     SameSite = SameSiteMode.None
                 });
+
                 return Ok(result);
             }
             catch (Exception exc)
