@@ -6,14 +6,14 @@ An ASP.NET Web API service for a technology blog site using RESTful architecture
 
 This project served as my introduction to .NET Web API and processes data in JSON format for the following endpoints:
 
-### User Endpoints
+#### Users
 
 * /users/register
 * /users/login
 * /users/refresh
 * /users/logout/:id
 
-### Post Endpoints
+#### Posts
 
 * /posts
 * /posts/:id
@@ -22,11 +22,11 @@ This project served as my introduction to .NET Web API and processes data in JSO
 * /posts/update
 * /posts/delete/:id
 
-### Post Comment Endpoints
+#### Post Comments
 
 * /comments
-* /comments/:id
 * /posts/:id/comments
+* /comments/:id
 * /comments/create
 * /comments/update
 * /comments/delete/:id
