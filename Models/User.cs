@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using TechBlog.DTOs;
 
 namespace TechBlog.Models
 {
@@ -24,6 +25,6 @@ namespace TechBlog.Models
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-        public string Salt { get; set; }
+        public string Salt { get; set; }       
     }
 }

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TechBlog.ViewModels;
+using TechBlog.DTOs;
+using TechBlog.Extensions;
 
 namespace TechBlog.Controllers
 {
@@ -30,53 +32,54 @@ namespace TechBlog.Controllers
        
         [HttpGet]
         [AllowAnonymous]
-        public ActionResult<IEnumerable<Post>> Get()
+        public ActionResult<IEnumerable<PostDTO>> Get()
         {
             var posts = repo.GetAllPosts().Take(15);            
-            return posts.OrderByDescending(p => p.Date).ToList();
+            return posts.OrderByDescending(p => p.Date).Select(p => p.AsDTO()).ToList();
         }
 
         [HttpGet("[action]")]        
-        public ActionResult<IEnumerable<Post>> AdminGet()
+        public ActionResult<IEnumerable<PostDTO>> AdminGet()
         {
             var posts = repo.GetAllPosts();
-            return posts.OrderByDescending(p => p.Date).ToList();
+            return posts.OrderByDescending(p => p.Date).Select(p => p.AsDTO()).ToList();
         }
         
         [HttpGet("{id}")]        
         [AllowAnonymous]
-        public async Task<ActionResult<Post>> GetOne(int id)
+        public async Task<ActionResult<PostDTO>> GetOne(int id)
         {
-            Post post = await repo.GetPostById(id);
-            return post;            
+            Post post = await repo.GetPostById(id);          
+            return post.AsDTO();            
         }
 
         [HttpGet("[action]/{id}")]        
-        public async Task<ActionResult<Post>> AdminGetOne(int id)
+        public async Task<ActionResult<PostDTO>> AdminGetOne(int id)
         {
             Post post = await repo.GetPostById(id);
-            return post;
+            return post.AsDTO();
         }
 
         [HttpGet("search/{searchTerm}")]
         [AllowAnonymous]
-        public ActionResult<IEnumerable<Post>> FilterPostsByTitle(string searchTerm = null)
+        public ActionResult<IEnumerable<PostDTO>> FilterPostsByTitle(string searchTerm = null)
         {
             var posts = repo.GetAllPosts();
 
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return Array.Empty<Post>();
+                return Array.Empty<PostDTO>();
             }
 
             return posts
                 .Where(p => p.Title.ToLowerInvariant().Contains(searchTerm))
                 .OrderByDescending(p => p.Date)
+                .Select(p => p.AsDTO())
                 .ToList();
         }        
       
         [HttpPost("[action]")]        
-        public ActionResult<Post> Create([FromBody] CreatePostViewModel model)
+        public ActionResult<PostDTO> Create([FromBody] CreatePostViewModel model)
         {
             Post post = new()
             {
@@ -92,21 +95,22 @@ namespace TechBlog.Controllers
             // Verify whether title is unique based on slug            
             if (slugService.IsUnique(post.Slug))
             {
-                Post newPost = repo.Insert(post);
-                return newPost;
+                repo.Insert(post);
+                return post.AsDTO();
             }
             else
             {
-                return BadRequest("Cannot create a post with a duplicate title");
+                return BadRequest("Cannot update a post with a duplicate title");
             }            
         }
 
         [HttpPut("[action]")]        
-        public async Task<ActionResult<Post>> Update([FromBody] Post model)
+        public async Task<ActionResult<PostDTO>> Update([FromBody] EditPostViewModel model)
         {
             Post post = await repo.GetPostById(model.Id);
 
             post.AuthorId = model.AuthorId;
+            post.Date = model.Date;
             post.Excerpt = model.Excerpt;            
             post.Content = model.Content;
             post.ImgSrc = model.ImgSrc;
@@ -128,15 +132,16 @@ namespace TechBlog.Controllers
             }
 
             repo.Update(post);
-            return post;
+            Post updatedPost = await repo.GetPostById(post.Id);
+            return updatedPost.AsDTO();
         }
 
         [HttpDelete("[action]/{id}")]
-        public ActionResult<Post> Delete(int id)
+        public ActionResult<int> Delete(int id)
         {
-            Post post = repo.Delete(id);
+            repo.Delete(id);
             commentRepo.DeleteCommentsByPostId(id);
-            return post;
+            return id;
         }
     }
 }

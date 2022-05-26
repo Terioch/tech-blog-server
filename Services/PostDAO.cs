@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TechBlog.Contexts;
 using System.Threading.Tasks;
+using TechBlog.Extensions;
 
 namespace TechBlog.Services
 {
@@ -22,7 +23,7 @@ namespace TechBlog.Services
 
         public IEnumerable<Post> GetAllPosts()
         {
-            return context.Posts;
+            return context.Posts.Include(p => p.Author);
         }              
 
         public async Task<Post> GetPostById(int id)
@@ -30,27 +31,24 @@ namespace TechBlog.Services
             return await context.Posts.Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public Post Insert(Post post)
+        public int Insert(Post post)
         {
             context.Posts.Add(post);
-            context.SaveChanges();
-            return post;
+            return context.SaveChanges();            
         }
 
-        public Post Update(Post post)
+        public int Update(Post post)
         {
             EntityEntry<Post> attachedPost = context.Posts.Attach(post);
             attachedPost.State = EntityState.Modified;
-            context.SaveChanges();
-            return post;
+            return context.SaveChanges();
         }
 
-        public Post Delete(int id)
+        public int Delete(int id)
         {
             Post post = context.Posts.Find(id);
             context.Posts.Remove(post);
-            context.SaveChanges();
-            return post;
+            return context.SaveChanges();
         }
 
         /*public List<PostModel> GetAllPosts()
