@@ -45,18 +45,40 @@ namespace TechBlog.Controllers
             return posts.OrderByDescending(p => p.Date).Select(p => p.AsDTO()).ToList();
         }
         
-        [HttpGet("{id}")]        
+        [HttpGet("{slug}")]        
         [AllowAnonymous]
-        public async Task<ActionResult<PostDTO>> GetOne(int id)
+        public async Task<ActionResult<PostDTO>> GetOne(string slug)
         {
-            Post post = await repo.GetPostById(id);          
+            if (string.IsNullOrEmpty(slug))
+            {
+                return NotFound();
+            }
+
+            Post post = await repo.GetPostBySlug(slug);
+
+            if (post is null)
+            {
+                return NotFound();
+            }
+
             return post.AsDTO();            
         }
 
-        [HttpGet("[action]/{id}")]        
-        public async Task<ActionResult<PostDTO>> AdminGetOne(int id)
+        [HttpGet("[action]/{slug}")]        
+        public async Task<ActionResult<PostDTO>> AdminGetOne(string slug)
         {
-            Post post = await repo.GetPostById(id);
+            if (string.IsNullOrEmpty(slug))
+            {
+                return NotFound();
+            }
+
+            Post post = await repo.GetPostBySlug(slug);
+
+            if (post is null)
+            {
+                return NotFound();
+            }
+
             return post.AsDTO();
         }
 
@@ -64,12 +86,12 @@ namespace TechBlog.Controllers
         [AllowAnonymous]
         public ActionResult<IEnumerable<PostDTO>> FilterPostsByTitle(string searchTerm = null)
         {
-            var posts = repo.GetAllPosts();
-
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 return Array.Empty<PostDTO>();
             }
+
+            var posts = repo.GetAllPosts();            
 
             return posts
                 .Where(p => p.Title.ToLowerInvariant().Contains(searchTerm))

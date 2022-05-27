@@ -10,6 +10,7 @@ namespace TechBlog.Services
     {
         public IEnumerable<Post> GetAllPosts();
         public Task<Post> GetPostById(int Id);
+        public Task<Post> GetPostBySlug(string slug);
         public int Insert(Post post);
         public int Update(Post post);
         public int Delete(int Id);

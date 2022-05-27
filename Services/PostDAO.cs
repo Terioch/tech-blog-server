@@ -28,7 +28,18 @@ namespace TechBlog.Services
 
         public async Task<Post> GetPostById(int id)
         {
-            return await context.Posts.Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
+            return await context.Posts
+                .Include(p => p.Author)
+                .Include(p => p.Comments)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<Post> GetPostBySlug(string slug)
+        {
+            return await context.Posts
+                .Include(p => p.Author)
+                .Include(p => p.Comments)
+                .FirstOrDefaultAsync(p => p.Slug == slug);
         }
 
         public int Insert(Post post)
