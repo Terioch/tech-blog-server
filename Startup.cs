@@ -93,7 +93,7 @@ namespace TechBlog
                    options.UseNpgsql(connectionString));               
             }*/
 
-            // Inject data access services
+            // Register data access services
             services.AddDbContext<TechBlogDbContext>(options =>
                    options.UseNpgsql(GetPgsqlConnectionString()));
             services.AddScoped<IPostDataService, PostDAO>();
@@ -116,10 +116,11 @@ namespace TechBlog
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TechBlog v1"));
+                app.UseDeveloperExceptionPage();                
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TechBlog v1"));
 
             app.UseHttpsRedirection();
 
