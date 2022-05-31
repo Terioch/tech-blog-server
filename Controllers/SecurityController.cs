@@ -20,8 +20,8 @@ namespace TechBlog.Controllers
     public class SecurityController : ControllerBase
     {
         private readonly TechBlogDbContext context;
-        readonly ISecurityDataService repo;
-        readonly SecurityHelper security;
+        private readonly ISecurityDataService repo;
+        private readonly SecurityHelper security;
 
         public SecurityController(TechBlogDbContext context, ISecurityDataService repo, SecurityHelper security)
         {
