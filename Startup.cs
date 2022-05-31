@@ -33,7 +33,6 @@ namespace TechBlog
 
         public IConfiguration Configuration { get; }
 
-        // Configure the pgsql connection string
         public string GetPgsqlConnectionString()
         {
             string databaseUrl = Configuration["DATABASE_URL"];
